@@ -1,5 +1,7 @@
 # Dintero Node.js SDK
 
+[![Build Status](https://github.com/dintero/Dintero.Node.SDK/workflows/CI/badge.svg)](https://github.com/dintero/Dintero.Node.SDK/actions?query=workflow%3ACI+branch%3Amaster)
+
 The Dintero Node SDK provides convenient access to the Dintero API from
 applications written in server-side Javascript
 
