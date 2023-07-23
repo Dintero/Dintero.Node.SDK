@@ -1,5 +1,5 @@
 YARN?=yarn --silent
-YARN_SCRIPTS=build test lint
+YARN_SCRIPTS=gen test lint tsc
 
 node_modules: package.json yarn.lock
 	@$(YARN) install
