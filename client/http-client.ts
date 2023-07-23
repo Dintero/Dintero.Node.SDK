@@ -21,10 +21,12 @@ export type ApiSuccess<Data> = {
 };
 
 export type ErrorBody = {
-    code?: string | null;
-    message: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    errors: any[];
+    error: {
+        code?: string | null;
+        message: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        errors: any[];
+    };
 };
 
 export type ErrorResult =
