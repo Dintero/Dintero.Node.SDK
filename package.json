@@ -59,7 +59,7 @@
     "devDependencies": {
         "@trivago/prettier-plugin-sort-imports": "4.3.0",
         "@tsconfig/node18": "18.2.2",
-        "@types/jest": "29.5.11",
+        "@types/jest": "29.5.12",
         "@typescript-eslint/eslint-plugin": "6.20.0",
         "@typescript-eslint/parser": "6.20.0",
         "eslint": "8.56.0",
