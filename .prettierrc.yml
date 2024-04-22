@@ -1,0 +1,17 @@
+printWidth: 80
+tabWidth: 4
+trailingComma: "all"
+importOrderParserPlugins:
+  - typescript
+importOrder:
+  - "^[./]"
+importOrderSeparation: true
+importOrderSortSpecifiers: true
+plugins:
+  - "@trivago/prettier-plugin-sort-imports"
+overrides:
+  - files:
+      - "*.yml"
+      - "*.yaml"
+    options:
+      tabWidth: 2
