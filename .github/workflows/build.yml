@@ -16,4 +16,4 @@ jobs:
         with:
           node-version: "lts/*"
           cache: yarn
-      - run: make lint build test
+      - run: make build test lint
