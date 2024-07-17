@@ -19,3 +19,18 @@ yarn add @dintero/node
 
 The package needs to be configurew with your account api client, which is
 available in the Dintero Backoffice.
+
+## Bugs
+
+Bugs can be reported to https://github.com/Dintero/Dintero.Node.SDK/issues
+
+## Security
+
+Contact us at [security@dintero.com](mailto:security@dintero.com)
+
+## Building from source
+
+```bash
+yarn install
+yarn run build
+```
