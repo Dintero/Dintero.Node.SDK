@@ -3,13 +3,15 @@
     "compilerOptions": {
         "declaration": true,
         "target": "es2022",
-        "module": "commonjs",
+        "module": "esnext",
+        "moduleResolution": "bundler",
         "outDir": "dist",
         "strict": true,
         "baseUrl": "./",
         "types": ["jest", "node"],
         "noUnusedLocals": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "noUncheckedIndexedAccess": true
     },
     "include": ["src/**/*.ts", "test/**/*.ts"],
     "exclude": ["node_modules"]
