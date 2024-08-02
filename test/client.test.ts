@@ -1,17 +1,8 @@
 import createCheckoutClient from "../src/client/client";
-import Cache from "../src/middleware/cache";
 import { AuthSDK } from "../src/middleware/authToken";
+import Cache from "../src/middleware/cache";
 
-jest.mock("../src/middleware/cache", () => ({
-    __esModule: true,
-    default: {
-        get: jest.fn(),
-        set: jest.fn(),
-        delete: jest.fn(),
-        clear: jest.fn(),
-    },
-}));
-
+jest.mock("../src/middleware/cache");
 jest.mock("../src/middleware/authToken", () => ({
     __esModule: true,
     AuthSDK: jest.fn().mockImplementation(() => ({
@@ -24,6 +15,7 @@ describe("createCheckoutClient", () => {
     let mockFetch: jest.Mock;
     let mockGetEnsureToken: jest.Mock;
     let mockGetTokenExpiry: jest.Mock;
+    let mockCacheInstance: jest.Mocked<Cache>;
 
     const requestBody = {
         url: { return_url: "https://example.com" },
@@ -51,22 +43,16 @@ describe("createCheckoutClient", () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
-        (Cache.get as jest.Mock).mockImplementation((key: string) => {
-            console.log(`[Test] Cache.get called with key: ${key}`);
+        mockCacheInstance = new Cache() as jest.Mocked<Cache>;
+        mockCacheInstance.get.mockImplementation((key: string) => {
             if (key === "dintero_access_token") return "mocked-access-token";
             return null;
         });
-        (Cache.set as jest.Mock).mockImplementation(
-            (key: string, value: any) => {
-                console.log(
-                    `[Test] Cache.set called with key: ${key}, value: ${value}`,
-                );
-            },
-        );
 
         mockFetch = jest.fn().mockResolvedValue({
             ok: true,
             json: async () => ({ success: true }),
+            headers: new Headers(),
         });
 
         mockGetEnsureToken = jest.fn().mockResolvedValue("mocked-access-token");
@@ -92,23 +78,25 @@ describe("createCheckoutClient", () => {
                 body: requestBody,
                 headers: { "Content-Type": "application/json" },
             });
-            console.log("[Test] Finished POST request");
         } catch (error) {
             console.error("[Test] Error during POST request:", error);
             throw error;
         }
 
-        expect(mockFetch).toHaveBeenCalledTimes(1);
-        expect(mockFetch).toHaveBeenCalledWith(
+        const fetchCallArgs = mockFetch.mock.calls[0][0] as Request;
+
+        expect(fetchCallArgs.method).toBe("POST");
+        expect(fetchCallArgs.url).toBe(
             "https://checkout.dintero.com/sessions-profile",
-            expect.objectContaining({
-                method: "POST",
-                headers: expect.objectContaining({
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer mocked-access-token",
-                }),
-                body: JSON.stringify(requestBody),
-            }),
         );
+        expect(fetchCallArgs.headers.get("Content-Type")).toBe(
+            "application/json",
+        );
+        expect(fetchCallArgs.headers.get("Authorization")).toBe(
+            "Bearer mocked-access-token",
+        );
+
+        const body = await fetchCallArgs.json();
+        expect(body).toEqual(requestBody);
     });
 });

@@ -1,113 +1,130 @@
-import { AuthSDK } from "../src/auth/authToken";
-import axios from "axios";
-import MockAdapter = require("axios-mock-adapter");
-import * as dotenv from "dotenv";
+import { request } from "undici";
+import type { Dispatcher } from "undici";
+import { AuthSDK } from "../src/middleware/authToken";
 
-dotenv.config();
+jest.mock("undici", () => ({
+    request: jest.fn(),
+    Dispatcher: {
+        ResponseData: jest.fn(),
+    },
+}));
+
+const mockedRequest = request as jest.MockedFunction<typeof request>;
 
 describe("AuthSDK", () => {
-    let mock: MockAdapter;
+    const apiUrl = "https://api.example.com";
+    const oid = "test_oid";
+    const clientId = "test_client_id";
+    const clientSecret = "test_client_secret";
     let authSDK: AuthSDK;
-    let originalConsoleError: (message?: any, ...optionalParams: any[]) => void;
 
     beforeEach(() => {
-        mock = new MockAdapter(axios);
-        authSDK = new AuthSDK();
-        originalConsoleError = console.error;
-        console.error = jest.fn();
+        authSDK = new AuthSDK(apiUrl, oid, clientId, clientSecret);
+        jest.clearAllMocks();
+        jest.spyOn(console, "error").mockImplementation(() => {});
+        jest.spyOn(console, "log").mockImplementation(() => {});
     });
 
-    afterEach(() => {
-        mock.restore();
-        console.error = originalConsoleError;
-    });
-
-    it("Should authenticate and fetch a token successfully", async () => {
-        const mockToken = "test_token";
-        const mockExpiry = 3600;
-        const url = `${process.env.API_URL}/v1/accounts/${process.env.OID}/auth/token`;
-
-        mock.onPost(url).reply(200, {
-            access_token: mockToken,
-            expires_in: mockExpiry,
-        });
-
-        const token = await authSDK.authenticate();
-
-        expect(token).toBe(mockToken);
-        expect(authSDK.getToken()).toBe(mockToken);
-        expect(authSDK.getTokenExpiry()).toBeGreaterThan(Date.now());
-    });
-
-    it("Should handle authentication failure", async () => {
-        const url = `${process.env.API_URL}/v1/accounts/${process.env.OID}/auth/token`;
-
-        mock.onPost(url).reply(500, { error: "Internal Server Error" });
-
-        authSDK.setRefreshToken("");
-
-        await expect(authSDK.authenticate()).rejects.toThrow(
-            "Internal Server Error",
-        );
-    });
-
-    it("Should use existing token if it is still valid", async () => {
+    it("Should fetch a new token successfully when making a request", async () => {
         const mockToken = "test_token";
         const mockExpiry = 3600;
 
-        authSDK.setToken(mockToken);
-        authSDK.setTokenExpiry(Date.now() + mockExpiry * 1000);
+        mockedRequest.mockResolvedValueOnce({
+            statusCode: 200,
+            body: {
+                text: async () =>
+                    JSON.stringify({
+                        access_token: mockToken,
+                        expires_in: mockExpiry,
+                        refresh_token: "new_refresh_token",
+                    }),
+            },
+        } as unknown as Dispatcher.ResponseData);
 
-        const token = await authSDK.authenticate();
+        mockedRequest.mockResolvedValueOnce({
+            statusCode: 200,
+            body: {
+                text: async () => "success",
+            },
+        } as unknown as Dispatcher.ResponseData);
 
-        expect(token).toBe(mockToken);
-        expect(authSDK.getToken()).toBe(mockToken);
-    });
+        const now = Date.now();
+        jest.spyOn(Date, "now").mockImplementation(() => now);
 
-    it("Should refresh token if it is expired", async () => {
-        const newToken = "new_test_token";
-        const mockExpiry = 3600;
-        const refreshUrl = `${process.env.API_URL}/v1/accounts/${process.env.OID}/auth/token/refresh`;
-
-        authSDK.setToken("expired_token");
-        authSDK.setTokenExpiry(Date.now() - 1000);
-        authSDK.setRefreshToken("existing_refresh_token");
-
-        mock.onPost(refreshUrl).reply(200, {
-            access_token: newToken,
-            expires_in: mockExpiry,
-            refresh_token: "new_refresh_token",
+        const response = await authSDK.request("/test-endpoint", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
         });
 
-        const token = await authSDK.authenticate();
+        expect(response).toBeDefined();
+        expect(mockedRequest).toHaveBeenCalledTimes(2);
 
-        expect(token).toBe(newToken);
-        expect(authSDK.getToken()).toBe(newToken);
-        expect(authSDK.getTokenExpiry()).toBeGreaterThan(Date.now());
-        expect(authSDK.getRefreshToken()).toBe("new_refresh_token");
-    });
-
-    it("Should handle token fetch error gracefully", async () => {
-        const url = `${process.env.API_URL}/v1/accounts/${process.env.OID}/auth/token`;
-
-        mock.onPost(url).reply(400, { error: "Bad Request" });
-
-        authSDK.setRefreshToken("");
-
-        await expect(authSDK.authenticate()).rejects.toThrow("Bad Request");
-    });
-
-    it("Should handle token refresh error gracefully", async () => {
-        const refreshUrl = `${process.env.API_URL}/v1/accounts/${process.env.OID}/auth/token/refresh`;
-
-        mock.onPost(refreshUrl).reply(400, { error: "Refresh Token Error" });
-
-        authSDK.setToken("expired_token");
-        authSDK.setTokenExpiry(Date.now() - 1000);
-        authSDK.setRefreshToken("existing_refresh_token");
-
-        await expect(authSDK.authenticate()).rejects.toThrow(
-            "Refresh Token Error",
+        expect(mockedRequest).toHaveBeenCalledWith(
+            expect.stringContaining("/test-endpoint"),
+            expect.objectContaining({
+                headers: expect.objectContaining({
+                    Authorization: `Bearer ${mockToken}`,
+                }),
+            }),
         );
+    });
+
+    it("Should use the existing token if still valid when making a request", async () => {
+        const mockToken = "test_token";
+        const mockExpiry = Date.now() + 3600 * 1000;
+
+        const now = Date.now();
+        jest.spyOn(Date, "now").mockImplementation(() => now);
+
+        authSDK["token"] = mockToken;
+        authSDK["tokenExpiry"] = mockExpiry;
+
+        mockedRequest.mockResolvedValueOnce({
+            statusCode: 200,
+            body: {
+                text: async () => "success",
+            },
+        } as unknown as Dispatcher.ResponseData);
+
+        const response = await authSDK.request("/test-endpoint", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        expect(response).toBeDefined();
+        expect(mockedRequest).toHaveBeenCalledTimes(1);
+        expect(mockedRequest).toHaveBeenCalledWith(
+            expect.stringContaining("/test-endpoint"),
+            expect.objectContaining({
+                headers: expect.objectContaining({
+                    Authorization: `Bearer ${mockToken}`,
+                }),
+            }),
+        );
+    });
+
+    it("Should handle token fetch failure when making a request", async () => {
+        mockedRequest.mockResolvedValueOnce({
+            statusCode: 500,
+            body: {
+                text: async () =>
+                    JSON.stringify({ error: "Internal Server Error" }),
+            },
+        } as unknown as Dispatcher.ResponseData);
+
+        await expect(
+            authSDK.request("/test-endpoint", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+        ).rejects.toThrow("An unexpected error occurred");
+
+        expect(mockedRequest).toHaveBeenCalledTimes(1);
     });
 });

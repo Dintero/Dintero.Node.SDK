@@ -1,6 +1,7 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
-
 module.exports = {
-    setupFiles: ['<rootDir>/jest.setup.ts'],
+    preset: "ts-jest",
+    testEnvironment: "node",
+    transform: {
+        "^.+\\.ts$": "ts-jest",
+    },
 };

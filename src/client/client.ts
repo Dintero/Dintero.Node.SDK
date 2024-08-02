@@ -29,12 +29,13 @@ export type CheckoutPaths = Pick<
 const TOKEN_CACHE_KEY = "dintero_access_token";
 let tokenExpiration: number | null = null;
 
-const fetchWithAuthenticate = (config: ClientConfig): typeof fetch => {
+const fetchWithAuthenticate = (
+    config: ClientConfig,
+    cache: Cache,
+): typeof fetch => {
     const fetcher = config.fetch ?? fetch;
 
     return async (input: RequestInfo | URL, init?: RequestInit) => {
-        console.log("[Client] Fetching with:", { input, init });
-
         const authSDK = new AuthSDK(
             config.endpoint ?? "",
             config.clientId,
@@ -42,31 +43,25 @@ const fetchWithAuthenticate = (config: ClientConfig): typeof fetch => {
             config.audience,
         );
 
-        let token = Cache.get(TOKEN_CACHE_KEY);
-
-        console.log("[Client] Cached Token:", token);
+        let token = cache.get(TOKEN_CACHE_KEY);
 
         if (!token || (tokenExpiration && Date.now() > tokenExpiration)) {
             try {
                 token = await authSDK.getEnsureToken();
-                Cache.set(TOKEN_CACHE_KEY, token);
+                cache.set(TOKEN_CACHE_KEY, token);
                 const expiry = await authSDK.getTokenExpiry();
                 tokenExpiration = Date.now() + (expiry ?? 0);
-                console.log(
-                    `[Client] New token cached with expiry at ${new Date(tokenExpiration).toISOString()}`,
-                );
             } catch (error) {
                 console.error("[Client] Failed to obtain access token", error);
                 throw new Error("Failed to obtain access token");
             }
         }
 
-        const headers: HeadersInit = {
-            ...(init?.headers instanceof Headers
-                ? Object.fromEntries(init.headers.entries())
-                : init?.headers ?? {}),
-            Authorization: `Bearer ${token}`,
-        };
+        const headers = new Headers(init?.headers || {});
+        headers.set("Authorization", `Bearer ${token}`);
+        if (!headers.has("Content-Type")) {
+            headers.set("Content-Type", "application/json");
+        }
 
         const initWithAuthorization: RequestInit = {
             ...init,
@@ -90,9 +85,10 @@ const fetchWithAuthenticate = (config: ClientConfig): typeof fetch => {
 
 const createCheckoutClient = (config: ClientConfig) => {
     const baseUrl = new URL(config.endpoint ?? "https://checkout.dintero.com");
+    const cache = new Cache();
     const client = createClient<CheckoutPaths>({
         baseUrl: baseUrl.toString(),
-        fetch: fetchWithAuthenticate(config),
+        fetch: fetchWithAuthenticate(config, cache),
     });
     return client;
 };

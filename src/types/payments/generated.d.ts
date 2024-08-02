@@ -932,49 +932,70 @@ export interface components {
         });
         PayExCreditcardPayment: {
             payment_product_type: "PayExCreditcardPayment";
-        } & (Omit<components["schemas"]["PayPayment"], "payment_product_type"> & {
+        } & (Omit<
+            components["schemas"]["PayPayment"],
+            "payment_product_type"
+        > & {
             /** @enum {string} */
             operation: "unscheduled_purchase" | "recurring_purchase";
         });
         BamboraCreditcardPayment: {
             payment_product_type: "BamboraCreditcardPayment";
-        } & (Omit<components["schemas"]["PayPayment"], "payment_product_type"> & {
+        } & (Omit<
+            components["schemas"]["PayPayment"],
+            "payment_product_type"
+        > & {
             /** @enum {string} */
             operation: "unscheduled_purchase" | "recurring_purchase";
         });
         CollectorInvoiceB2BPayment: {
             payment_product_type: "CollectorInvoiceB2BPayment";
-        } & (Omit<components["schemas"]["Payment"], "payment_product_type"> & Omit<components["schemas"]["CollectorPaymentDetails"], "payment_product_type"> & {
-            shipping_address: components["schemas"]["CollectorB2BAddress"];
-            billing_address: components["schemas"]["CollectorB2BAddress"];
-            /** @description If true will either make the backend add or update a signed cookie with
-             *     customer data. If false the cookie will be removed. If not set,
-             *     any existing cookie will remain unchanged
-             *      */
-            remember_me?: boolean;
-        });
+        } & (Omit<components["schemas"]["Payment"], "payment_product_type"> &
+            Omit<
+                components["schemas"]["CollectorPaymentDetails"],
+                "payment_product_type"
+            > & {
+                shipping_address: components["schemas"]["CollectorB2BAddress"];
+                billing_address: components["schemas"]["CollectorB2BAddress"];
+                /** @description If true will either make the backend add or update a signed cookie with
+                 *     customer data. If false the cookie will be removed. If not set,
+                 *     any existing cookie will remain unchanged
+                 *      */
+                remember_me?: boolean;
+            });
         CollectorFinancePayment: {
             payment_product_type: "CollectorFinancePayment";
-        } & (Omit<components["schemas"]["Payment"], "payment_product_type"> & components["schemas"]["CollectorDetails"] & Omit<components["schemas"]["CollectorPaymentDetails"], "payment_product_type"> & {
-            shipping_address: components["schemas"]["CollectorAddress"];
-            billing_address: components["schemas"]["CollectorAddress"];
-            /** @description If true will either make the backend add or update a signed cookie with
-             *     customer data. If false the cookie will be removed. If not set,
-             *     any existing cookie will remain unchanged
-             *      */
-            remember_me?: boolean;
-            /** @description Code from authorized customer.
-             *      */
-            authorization_code?: string;
-        });
+        } & (Omit<components["schemas"]["Payment"], "payment_product_type"> &
+            components["schemas"]["CollectorDetails"] &
+            Omit<
+                components["schemas"]["CollectorPaymentDetails"],
+                "payment_product_type"
+            > & {
+                shipping_address: components["schemas"]["CollectorAddress"];
+                billing_address: components["schemas"]["CollectorAddress"];
+                /** @description If true will either make the backend add or update a signed cookie with
+                 *     customer data. If false the cookie will be removed. If not set,
+                 *     any existing cookie will remain unchanged
+                 *      */
+                remember_me?: boolean;
+                /** @description Code from authorized customer.
+                 *      */
+                authorization_code?: string;
+            });
         PayExTokenProvider: {
             payment_product_type: "PayExTokenProvider";
-        } & (Omit<components["schemas"]["TokenProvider"], "payment_product_type"> & {
+        } & (Omit<
+            components["schemas"]["TokenProvider"],
+            "payment_product_type"
+        > & {
             token_types: ("payment_token" | "recurrence_token")[];
         });
         BamboraTokenProvider: {
             payment_product_type: "BamboraTokenProvider";
-        } & (Omit<components["schemas"]["TokenProvider"], "payment_product_type"> & {
+        } & (Omit<
+            components["schemas"]["TokenProvider"],
+            "payment_product_type"
+        > & {
             token_types: ("payment_token" | "recurrence_token")[];
         });
         /** @description Contains href URI to initiate a Click to Pay payment using Swedbank Pay (v3)
@@ -1031,18 +1052,22 @@ export interface components {
         } & Omit<components["schemas"]["PaymentOperation"], "rel">);
         CollectorInvoiceB2BPreapprovedPayment: {
             payment_product_type: "CollectorInvoiceB2BPreapprovedPayment";
-        } & (Omit<components["schemas"]["Payment"], "payment_product_type"> & Omit<components["schemas"]["CollectorPaymentDetails"], "payment_product_type"> & {
-            shipping_address: components["schemas"]["CollectorB2BAddress"];
-            /** @description Optional query parameter. SMS-confirm-code. To verify the identity of the payee. */
-            scc?: string;
-            /** @description Id to represent the company being paid from */
-            company_id: string;
-            /** @description If true will either make the backend add or update a signed cookie with
-             *     customer data. If false the cookie will be removed. If not set,
-             *     any existing cookie will remain unchanged
-             *      */
-            remember_me?: boolean;
-        });
+        } & (Omit<components["schemas"]["Payment"], "payment_product_type"> &
+            Omit<
+                components["schemas"]["CollectorPaymentDetails"],
+                "payment_product_type"
+            > & {
+                shipping_address: components["schemas"]["CollectorB2BAddress"];
+                /** @description Optional query parameter. SMS-confirm-code. To verify the identity of the payee. */
+                scc?: string;
+                /** @description Id to represent the company being paid from */
+                company_id: string;
+                /** @description If true will either make the backend add or update a signed cookie with
+                 *     customer data. If false the cookie will be removed. If not set,
+                 *     any existing cookie will remain unchanged
+                 *      */
+                remember_me?: boolean;
+            });
         BamboraVippsPayment: {
             payment_product_type: "BamboraVippsPayment";
         } & (Omit<components["schemas"]["Payment"], "payment_product_type"> & {
@@ -1090,39 +1115,49 @@ export interface components {
         });
         CollectorInstallmentPayment: {
             payment_product_type: "CollectorInstallmentPayment";
-        } & (Omit<components["schemas"]["Payment"], "payment_product_type"> & components["schemas"]["CollectorDetails"] & Omit<components["schemas"]["CollectorPaymentDetails"], "payment_product_type"> & {
-            product: {
-                /**
-                 * @description Id of the payment product
-                 * @example IF_3_001
-                 */
-                id: string;
-            };
-            shipping_address: components["schemas"]["CollectorAddress"];
-            billing_address: components["schemas"]["CollectorAddress"];
-            /** @description If true will either make the backend add or update a signed cookie with
-             *     customer data. If false the cookie will be removed. If not set,
-             *     any existing cookie will remain unchanged
-             *      */
-            remember_me?: boolean;
-            /** @description Code from authorized customer.
-             *      */
-            authorization_code?: string;
-        });
+        } & (Omit<components["schemas"]["Payment"], "payment_product_type"> &
+            components["schemas"]["CollectorDetails"] &
+            Omit<
+                components["schemas"]["CollectorPaymentDetails"],
+                "payment_product_type"
+            > & {
+                product: {
+                    /**
+                     * @description Id of the payment product
+                     * @example IF_3_001
+                     */
+                    id: string;
+                };
+                shipping_address: components["schemas"]["CollectorAddress"];
+                billing_address: components["schemas"]["CollectorAddress"];
+                /** @description If true will either make the backend add or update a signed cookie with
+                 *     customer data. If false the cookie will be removed. If not set,
+                 *     any existing cookie will remain unchanged
+                 *      */
+                remember_me?: boolean;
+                /** @description Code from authorized customer.
+                 *      */
+                authorization_code?: string;
+            });
         CollectorInvoicePayment: {
             payment_product_type: "CollectorInvoicePayment";
-        } & (Omit<components["schemas"]["Payment"], "payment_product_type"> & components["schemas"]["CollectorDetails"] & Omit<components["schemas"]["CollectorPaymentDetails"], "payment_product_type"> & {
-            shipping_address: components["schemas"]["CollectorAddress"];
-            billing_address: components["schemas"]["CollectorAddress"];
-            /** @description If true will either make the backend add or update a signed cookie with
-             *     customer data. If false the cookie will be removed. If not set,
-             *     any existing cookie will remain unchanged
-             *      */
-            remember_me?: boolean;
-            /** @description Code from authorized customer.
-             *      */
-            authorization_code?: string;
-        });
+        } & (Omit<components["schemas"]["Payment"], "payment_product_type"> &
+            components["schemas"]["CollectorDetails"] &
+            Omit<
+                components["schemas"]["CollectorPaymentDetails"],
+                "payment_product_type"
+            > & {
+                shipping_address: components["schemas"]["CollectorAddress"];
+                billing_address: components["schemas"]["CollectorAddress"];
+                /** @description If true will either make the backend add or update a signed cookie with
+                 *     customer data. If false the cookie will be removed. If not set,
+                 *     any existing cookie will remain unchanged
+                 *      */
+                remember_me?: boolean;
+                /** @description Code from authorized customer.
+                 *      */
+                authorization_code?: string;
+            });
         KlarnaPayment: {
             payment_product_type: "KlarnaPayment";
         } & (Omit<components["schemas"]["Payment"], "payment_product_type"> & {
@@ -1708,7 +1743,11 @@ export interface components {
              * @example travel
              * @enum {string}
              */
-            insurance_type?: "cancellation" | "travel" | "cancellation_travel" | "bankruptcy";
+            insurance_type?:
+                | "cancellation"
+                | "travel"
+                | "cancellation_travel"
+                | "bankruptcy";
             /**
              * @description Price of the insurance in smallest unit of local currency,
              *     e.g. 50000
@@ -2524,7 +2563,13 @@ export interface components {
              *
              * @enum {string}
              */
-            type?: "physical" | "digital" | "service" | "gift_card" | "shipping" | "surcharge";
+            type?:
+                | "physical"
+                | "digital"
+                | "service"
+                | "gift_card"
+                | "shipping"
+                | "surcharge";
             fee_split?: components["schemas"]["PayoutFeeSplit"];
             /** @description An array of objects specifying how the amount should be split between
              *     sellers when using Dintero Payout
@@ -2547,7 +2592,14 @@ export interface components {
             emd?: components["schemas"]["Emd"];
         };
         /** @enum {string} */
-        DiscountType: "customer" | "periodic" | "manual" | "loyalty" | "total" | "employee" | "external";
+        DiscountType:
+            | "customer"
+            | "periodic"
+            | "manual"
+            | "loyalty"
+            | "total"
+            | "employee"
+            | "external";
         DiscountItem: {
             /**
              * @description Monetary amount in smallest unit for the currency
@@ -2916,7 +2968,8 @@ export interface components {
              *       }
              *     ]
              */
-            items?: (components["schemas"]["OrderItem"] & components["schemas"]["OrderDiscountItem"])[];
+            items?: (components["schemas"]["OrderItem"] &
+                components["schemas"]["OrderDiscountItem"])[];
             /** @description The origin amount to authorize/capture including VAT
              *     before any discount, only set if the session was updated
              *     when calculating discounts.
@@ -2939,7 +2992,10 @@ export interface components {
              *      */
             gift_cards?: components["schemas"]["Giftcard"][];
         };
-        SessionOrder: WithRequired<components["schemas"]["SessionOrderUpdate"], "amount" | "currency"> & {
+        SessionOrder: WithRequired<
+            components["schemas"]["SessionOrderUpdate"],
+            "amount" | "currency"
+        > & {
             /** @description An id that identifies the seller, value will be included
              *     in the settlement reports
              *      */
@@ -3077,7 +3133,10 @@ export interface components {
          * @description Determines if the payment_product_type is currently available for payment
          * @enum {string}
          */
-        SessionPayability: "payable" | "disabled_by_gateway" | "disabled_by_order_amount";
+        SessionPayability:
+            | "payable"
+            | "disabled_by_gateway"
+            | "disabled_by_order_amount";
         /** @description Bambora configuration */
         BamboraConfiguration: {
             /**
@@ -3504,7 +3563,8 @@ export interface components {
                 /** @description enable finance payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
-                product?: unknown & components["schemas"]["InstabankFinanceProduct"];
+                product?: unknown &
+                    components["schemas"]["InstabankFinanceProduct"];
             };
             /** @description invoice payment */
             invoice?: {
@@ -3512,7 +3572,8 @@ export interface components {
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
                 require_applicant?: boolean;
-                product?: unknown & components["schemas"]["InstabankInvoiceProduct"];
+                product?: unknown &
+                    components["schemas"]["InstabankInvoiceProduct"];
             };
             /** @description Fixed Part Payment */
             installment?: {
@@ -3563,7 +3624,9 @@ export interface components {
                  *      */
                 terminal?: {
                     /** @enum {string} */
-                    terminal: "/Terminal/default.aspx" | "/terminal/mobile/default.aspx";
+                    terminal:
+                        | "/Terminal/default.aspx"
+                        | "/terminal/mobile/default.aspx";
                     /** @description Name of the terminal template to use, created in Netaxept Admin
                      *      */
                     terminal_design?: string;
@@ -3993,7 +4056,34 @@ export interface components {
              *
              * @enum {string}
              */
-            default_payment_type?: "bambora.creditcard" | "bambora.vipps" | "dintero.zero" | "dintero_psp.creditcard" | "instabank.finance" | "instabank.invoice" | "instabank.installment" | "instabank.postponement" | "vipps" | "payex.creditcard" | "payex.mobilepay" | "payex.swish" | "payex.vipps" | "payex.applepay" | "payex.clicktopay" | "payex.googlepay" | "collector.finance" | "collector.invoice" | "collector.invoice_b2b" | "collector.invoice_b2b_preapproved" | "collector.installment_b2b_preapproved" | "collector.installment" | "santander.debit_account" | "swish.swish" | "netaxept.creditcard" | "klarna.klarna" | "klarna.billie";
+            default_payment_type?:
+                | "bambora.creditcard"
+                | "bambora.vipps"
+                | "dintero.zero"
+                | "dintero_psp.creditcard"
+                | "instabank.finance"
+                | "instabank.invoice"
+                | "instabank.installment"
+                | "instabank.postponement"
+                | "vipps"
+                | "payex.creditcard"
+                | "payex.mobilepay"
+                | "payex.swish"
+                | "payex.vipps"
+                | "payex.applepay"
+                | "payex.clicktopay"
+                | "payex.googlepay"
+                | "collector.finance"
+                | "collector.invoice"
+                | "collector.invoice_b2b"
+                | "collector.invoice_b2b_preapproved"
+                | "collector.installment_b2b_preapproved"
+                | "collector.installment"
+                | "santander.debit_account"
+                | "swish.swish"
+                | "netaxept.creditcard"
+                | "klarna.klarna"
+                | "klarna.billie";
             bambora?: components["schemas"]["BamboraConfiguration"];
             dintero?: components["schemas"]["DinteroConfiguration"];
             dintero_psp?: components["schemas"]["DinteroPspConfiguration"];
@@ -4260,15 +4350,21 @@ export interface components {
                 customer_types: ("b2c" | "b2b")[];
             };
         };
-        SessionProfile: components["schemas"]["SessionBase"] & components["schemas"]["SessionCustomerTokens"] & {
-            /** @description Override configuration for the profile.
-             *      */
-            configuration?: components["schemas"]["PaymentConfiguration"] & components["schemas"]["DiscountsConfiguration"] & components["schemas"]["SessionThemeConfiguration"] & components["schemas"]["CountryConfiguration"] & components["schemas"]["DefaultCustomerTypeConfiguration"] & components["schemas"]["AllowDifferentBillingShippingAddressConfiguration"];
-            /** @description configuration profile
-             *      */
-            profile_id: string;
-            merchant?: components["schemas"]["Merchant"];
-        } & components["schemas"]["SessionExpress"];
+        SessionProfile: components["schemas"]["SessionBase"] &
+            components["schemas"]["SessionCustomerTokens"] & {
+                /** @description Override configuration for the profile.
+                 *      */
+                configuration?: components["schemas"]["PaymentConfiguration"] &
+                    components["schemas"]["DiscountsConfiguration"] &
+                    components["schemas"]["SessionThemeConfiguration"] &
+                    components["schemas"]["CountryConfiguration"] &
+                    components["schemas"]["DefaultCustomerTypeConfiguration"] &
+                    components["schemas"]["AllowDifferentBillingShippingAddressConfiguration"];
+                /** @description configuration profile
+                 *      */
+                profile_id: string;
+                merchant?: components["schemas"]["Merchant"];
+            } & components["schemas"]["SessionExpress"];
         /** @description Enable customer gift cards in session
          *      */
         SessionCustomerGiftcards: {
@@ -4311,9 +4407,15 @@ export interface components {
              */
             created_at?: string;
         };
-        SessionOptions: components["schemas"]["SessionBase"] & components["schemas"]["SessionExpress"] & {
-            configuration: components["schemas"]["PaymentConfiguration"] & components["schemas"]["DiscountsConfiguration"] & components["schemas"]["SessionThemeConfiguration"] & components["schemas"]["CountryConfiguration"] & components["schemas"]["DefaultCustomerTypeConfiguration"] & components["schemas"]["AllowDifferentBillingShippingAddressConfiguration"];
-        };
+        SessionOptions: components["schemas"]["SessionBase"] &
+            components["schemas"]["SessionExpress"] & {
+                configuration: components["schemas"]["PaymentConfiguration"] &
+                    components["schemas"]["DiscountsConfiguration"] &
+                    components["schemas"]["SessionThemeConfiguration"] &
+                    components["schemas"]["CountryConfiguration"] &
+                    components["schemas"]["DefaultCustomerTypeConfiguration"] &
+                    components["schemas"]["AllowDifferentBillingShippingAddressConfiguration"];
+            };
         SystemRequestHeaders: {
             /**
              * @description The name of the ecommerce solution
@@ -4346,7 +4448,10 @@ export interface components {
          *
          * @enum {string}
          */
-        PaymentOperationIntent: "unscheduled_purchase" | "recurring_purchase" | "generate_payment_token";
+        PaymentOperationIntent:
+            | "unscheduled_purchase"
+            | "recurring_purchase"
+            | "generate_payment_token";
         RequestHeaders: components["schemas"]["SystemRequestHeaders"] & {
             /**
              * @description The instance of the checkout that performed the request
@@ -4542,7 +4647,32 @@ export interface components {
                 id?: string;
                 request_id?: string;
                 /** @enum {string} */
-                name?: "INITIATED" | "VISITED" | "COMPLETED" | "AUTHORIZED" | "DECLINED" | "PAY_LOCK_START" | "PAY_LOCK_META" | "PAY_LOCK_END" | "PAY_FAILED" | "ON_HOLD_CALLBACK_SENT" | "AUTH_CALLBACK_SENT" | "FAILED" | "UNKNOWN" | "PAYMENT_TOKEN_FLOW_START" | "UPDATE_SESSION" | "CANCELLED" | "SET_BILLING_ADDRESS" | "SET_DISCOUNT_CODES" | "SET_SHIPPING_ADDRESS" | "SET_SHIPPING_OPTION" | "SET_GIFT_CARD" | "PUSH_NOTIFICATION_SENT" | "SECRET_CONFIRMATION_CODE_SENT" | "SET_MY_DINTERO" | "ADD_PAYMENT_INFORMATION";
+                name?:
+                    | "INITIATED"
+                    | "VISITED"
+                    | "COMPLETED"
+                    | "AUTHORIZED"
+                    | "DECLINED"
+                    | "PAY_LOCK_START"
+                    | "PAY_LOCK_META"
+                    | "PAY_LOCK_END"
+                    | "PAY_FAILED"
+                    | "ON_HOLD_CALLBACK_SENT"
+                    | "AUTH_CALLBACK_SENT"
+                    | "FAILED"
+                    | "UNKNOWN"
+                    | "PAYMENT_TOKEN_FLOW_START"
+                    | "UPDATE_SESSION"
+                    | "CANCELLED"
+                    | "SET_BILLING_ADDRESS"
+                    | "SET_DISCOUNT_CODES"
+                    | "SET_SHIPPING_ADDRESS"
+                    | "SET_SHIPPING_OPTION"
+                    | "SET_GIFT_CARD"
+                    | "PUSH_NOTIFICATION_SENT"
+                    | "SECRET_CONFIRMATION_CODE_SENT"
+                    | "SET_MY_DINTERO"
+                    | "ADD_PAYMENT_INFORMATION";
                 request_headers?: components["schemas"]["RequestHeaders"];
                 details?: {
                     error?: string;
@@ -4580,7 +4710,8 @@ export interface components {
              *      */
             transaction_id?: string;
         };
-        Session: components["schemas"]["SessionOptions"] & components["schemas"]["SessionMeta"];
+        Session: components["schemas"]["SessionOptions"] &
+            components["schemas"]["SessionMeta"];
         SessionRead: {
             order?: {
                 /** @description The gift cards selected, the part of `order.amount` that will be
@@ -4707,7 +4838,11 @@ export interface components {
          *
          * @enum {string}
          */
-        SettlementStatus: "NOT_SETTLED" | "PENDING_SETTLEMENT" | "PARTIALLY_SETTLED" | "SETTLED";
+        SettlementStatus:
+            | "NOT_SETTLED"
+            | "PENDING_SETTLEMENT"
+            | "PARTIALLY_SETTLED"
+            | "SETTLED";
         TransactionSettlementsEvent: {
             /** @description Id of the settlement this was paid in
              *      */
@@ -4736,7 +4871,11 @@ export interface components {
              *      */
             events: components["schemas"]["TransactionSettlementsEvent"][];
             /** @enum {string} */
-            settlement_status?: "NOT_SETTLED" | "PENDING_SETTLEMENT" | "PARTIALLY_SETTLED" | "SETTLED";
+            settlement_status?:
+                | "NOT_SETTLED"
+                | "PENDING_SETTLEMENT"
+                | "PARTIALLY_SETTLED"
+                | "SETTLED";
         };
         TransactionEvent: {
             readonly id?: string;
@@ -4745,7 +4884,18 @@ export interface components {
              *
              * @enum {string}
              */
-            transaction_status?: "INITIATED" | "AUTHORIZED" | "AUTHORIZATION_VOIDED" | "CAPTURED" | "PARTIALLY_CAPTURED" | "REFUNDED" | "PARTIALLY_REFUNDED" | "DECLINED" | "FAILED" | "UNKNOWN" | "ON_HOLD";
+            transaction_status?:
+                | "INITIATED"
+                | "AUTHORIZED"
+                | "AUTHORIZATION_VOIDED"
+                | "CAPTURED"
+                | "PARTIALLY_CAPTURED"
+                | "REFUNDED"
+                | "PARTIALLY_REFUNDED"
+                | "DECLINED"
+                | "FAILED"
+                | "UNKNOWN"
+                | "ON_HOLD";
             /** @description The gift cards that was used as part of this event
              *      */
             gift_cards?: (components["schemas"]["Giftcard"] & {
@@ -4757,7 +4907,16 @@ export interface components {
              * @example CAPTURE
              * @enum {string}
              */
-            event?: "INITIALIZE" | "AUTHORIZE" | "CAPTURE" | "REFUND" | "VOID" | "INITIATE_REFUND" | "INITIATE_VOID" | "INITIATE_CAPTURE" | "SETTLEMENT";
+            event?:
+                | "INITIALIZE"
+                | "AUTHORIZE"
+                | "CAPTURE"
+                | "REFUND"
+                | "VOID"
+                | "INITIATE_REFUND"
+                | "INITIATE_VOID"
+                | "INITIATE_CAPTURE"
+                | "SETTLEMENT";
             /** @description The event operation completed with success
              *      */
             success?: boolean;
@@ -4798,7 +4957,20 @@ export interface components {
                 /** @description The human readable description of the error/warning */
                 message: string;
                 /** @enum {string} */
-                type?: "DO_NOT_RETRY" | "MODIFICATIONS_REQUIRED" | "DAILY_LIMIT_EXCEEDED" | "MONTHLY_LIMIT_EXCEEDED" | "REJECTED_BY_ACQUIRER_INVALID_AMOUNT" | "REJECTED_BY_ACQUIRER_FORMAT_ERROR" | "REJECTED_BY_ACQUIRER_POSSIBLE_FRAUD" | "REJECTED_BY_ACQUIRER_CARD_STOLEN" | "REJECTED_BY_ACQUIRER_CARD_EXPIRED" | "REJECTED_BY_ACQUIRER" | "REJECTED_BY_ACQUIRER_INSUFFICIENT_FUNDS" | "ACQUIRER_HOST_OFFLINE" | "UNKNOWN";
+                type?:
+                    | "DO_NOT_RETRY"
+                    | "MODIFICATIONS_REQUIRED"
+                    | "DAILY_LIMIT_EXCEEDED"
+                    | "MONTHLY_LIMIT_EXCEEDED"
+                    | "REJECTED_BY_ACQUIRER_INVALID_AMOUNT"
+                    | "REJECTED_BY_ACQUIRER_FORMAT_ERROR"
+                    | "REJECTED_BY_ACQUIRER_POSSIBLE_FRAUD"
+                    | "REJECTED_BY_ACQUIRER_CARD_STOLEN"
+                    | "REJECTED_BY_ACQUIRER_CARD_EXPIRED"
+                    | "REJECTED_BY_ACQUIRER"
+                    | "REJECTED_BY_ACQUIRER_INSUFFICIENT_FUNDS"
+                    | "ACQUIRER_HOST_OFFLINE"
+                    | "UNKNOWN";
                 /** @description Result code received from Visa or Mastercard
                  *      */
                 result_code?: string;
@@ -5028,7 +5200,18 @@ export interface components {
                 "gateway:id"?: string;
                 merchant_name?: string;
                 /** @enum {string} */
-                "klarna:authorized_payment_method:type"?: "invoice" | "fixed_amount" | "base_account" | "direct_debit" | "direct_bank_transfer" | "b2b_invoice" | "card" | "slice_it_by_card" | "pay_later_by_card" | "pay_by_card" | "fixed_sum_credit";
+                "klarna:authorized_payment_method:type"?:
+                    | "invoice"
+                    | "fixed_amount"
+                    | "base_account"
+                    | "direct_debit"
+                    | "direct_bank_transfer"
+                    | "b2b_invoice"
+                    | "card"
+                    | "slice_it_by_card"
+                    | "pay_later_by_card"
+                    | "pay_by_card"
+                    | "fixed_sum_credit";
                 "klarna:authorized_payment_method:number_of_days"?: string;
                 "klarna:authorized_payment_method:number_of_installments"?: string;
                 /**
@@ -5036,7 +5219,9 @@ export interface components {
                  *
                  * @enum {string}
                  */
-                "klarna:authorized_payment_method:fraud_status"?: "ACCEPTED" | "PENDING";
+                "klarna:authorized_payment_method:fraud_status"?:
+                    | "ACCEPTED"
+                    | "PENDING";
             };
         };
         TransactionNetaxept: {
@@ -5069,10 +5254,30 @@ export interface components {
              * @example CAPTURED
              * @enum {string}
              */
-            readonly status?: "INITIATED" | "AUTHORIZED" | "AUTHORIZATION_VOIDED" | "CAPTURED" | "PARTIALLY_CAPTURED" | "REFUNDED" | "PARTIALLY_REFUNDED" | "DECLINED" | "FAILED" | "UNKNOWN";
+            readonly status?:
+                | "INITIATED"
+                | "AUTHORIZED"
+                | "AUTHORIZATION_VOIDED"
+                | "CAPTURED"
+                | "PARTIALLY_CAPTURED"
+                | "REFUNDED"
+                | "PARTIALLY_REFUNDED"
+                | "DECLINED"
+                | "FAILED"
+                | "UNKNOWN";
             events?: {
                 /** @enum {string} */
-                readonly transaction_status?: "INITIATED" | "AUTHORIZED" | "AUTHORIZATION_VOIDED" | "CAPTURED" | "PARTIALLY_CAPTURED" | "REFUNDED" | "PARTIALLY_REFUNDED" | "DECLINED" | "FAILED" | "UNKNOWN";
+                readonly transaction_status?:
+                    | "INITIATED"
+                    | "AUTHORIZED"
+                    | "AUTHORIZATION_VOIDED"
+                    | "CAPTURED"
+                    | "PARTIALLY_CAPTURED"
+                    | "REFUNDED"
+                    | "PARTIALLY_REFUNDED"
+                    | "DECLINED"
+                    | "FAILED"
+                    | "UNKNOWN";
                 metadata?: {
                     "netaxept:transaction_id"?: string;
                     "netaxept:operation"?: string;
@@ -5229,7 +5434,16 @@ export interface components {
                     "vipps:transactionInfo.timeStamp"?: string;
                     "vipps:transactionInfo.transactionId"?: string;
                     /** @enum {string} */
-                    "vipps:transactionInfo.status"?: "INITIATE" | "RESERVE" | "CANCEL" | "CAPTURE" | "SALE" | "VOID" | "Captured" | "Cancelled" | "Refund";
+                    "vipps:transactionInfo.status"?:
+                        | "INITIATE"
+                        | "RESERVE"
+                        | "CANCEL"
+                        | "CAPTURE"
+                        | "SALE"
+                        | "VOID"
+                        | "Captured"
+                        | "Cancelled"
+                        | "Refund";
                     "vipps:transaction.transactionText"?: string;
                 };
             }[];
@@ -5253,13 +5467,50 @@ export interface components {
              *
              * @enum {string}
              */
-            payment_product: "bambora" | "collector" | "dintero" | "dintero_psp" | "instabank" | "klarna" | "netaxept" | "payex" | "santander" | "swish" | "vipps";
+            payment_product:
+                | "bambora"
+                | "collector"
+                | "dintero"
+                | "dintero_psp"
+                | "instabank"
+                | "klarna"
+                | "netaxept"
+                | "payex"
+                | "santander"
+                | "swish"
+                | "vipps";
             /**
              * @description The payment product type corresponding to this transaction
              *
              * @enum {string}
              */
-            payment_product_type: "bambora.creditcard" | "bambora.vipps" | "collector.invoice" | "collector.invoice_b2b" | "collector.invoice_b2b_preapproved" | "collector.installment" | "dintero.zero" | "dintero.wallets" | "dintero_psp.creditcard" | "instabank.finance" | "instabank.invoice" | "instabank.installment" | "instabank.postponement" | "klarna.klarna" | "klarna.billie" | "netaxept.creditcard" | "payex.creditcard" | "payex.mobilepay" | "payex.swish" | "payex.vipps" | "payex.applepay" | "payex.clicktopay" | "payex.googlepay" | "santander.debit_account" | "swish.swish" | "vipps";
+            payment_product_type:
+                | "bambora.creditcard"
+                | "bambora.vipps"
+                | "collector.invoice"
+                | "collector.invoice_b2b"
+                | "collector.invoice_b2b_preapproved"
+                | "collector.installment"
+                | "dintero.zero"
+                | "dintero.wallets"
+                | "dintero_psp.creditcard"
+                | "instabank.finance"
+                | "instabank.invoice"
+                | "instabank.installment"
+                | "instabank.postponement"
+                | "klarna.klarna"
+                | "klarna.billie"
+                | "netaxept.creditcard"
+                | "payex.creditcard"
+                | "payex.mobilepay"
+                | "payex.swish"
+                | "payex.vipps"
+                | "payex.applepay"
+                | "payex.clicktopay"
+                | "payex.googlepay"
+                | "santander.debit_account"
+                | "swish.swish"
+                | "vipps";
             /**
              * @description Non-negative, minor units. Total amount of the transaction
              *
@@ -5329,7 +5580,18 @@ export interface components {
              * @example CAPTURED
              * @enum {string}
              */
-            readonly status?: "INITIATED" | "AUTHORIZED" | "AUTHORIZATION_VOIDED" | "CAPTURED" | "PARTIALLY_CAPTURED" | "REFUNDED" | "PARTIALLY_REFUNDED" | "DECLINED" | "FAILED" | "UNKNOWN" | "ON_HOLD";
+            readonly status?:
+                | "INITIATED"
+                | "AUTHORIZED"
+                | "AUTHORIZATION_VOIDED"
+                | "CAPTURED"
+                | "PARTIALLY_CAPTURED"
+                | "REFUNDED"
+                | "PARTIALLY_REFUNDED"
+                | "DECLINED"
+                | "FAILED"
+                | "UNKNOWN"
+                | "ON_HOLD";
             card?: {
                 /** @enum {string} */
                 type?: "Credit Card" | "Debit Card" | "Credit" | "Debit";
@@ -5379,7 +5641,8 @@ export interface components {
              *       }
              *     ]
              */
-            items?: (components["schemas"]["OrderItem"] & components["schemas"]["OrderDiscountItem"])[];
+            items?: (components["schemas"]["OrderItem"] &
+                components["schemas"]["OrderDiscountItem"])[];
             url?: {
                 /**
                  * Format: uri
@@ -5506,13 +5769,25 @@ export interface components {
                  *
                  * @enum {string}
                  */
-                payout?: "payout_account" | "payout_splits" | "payout_destination_id";
+                payout?:
+                    | "payout_account"
+                    | "payout_splits"
+                    | "payout_destination_id";
                 /** @description Id that will be referenced on the settlement report
                  *      */
                 payout_correlation_id?: string;
             };
             checkboxes?: components["schemas"]["CheckboxConfiguration"];
-        } & components["schemas"]["TransactionBambora"] & components["schemas"]["TransactionCollector"] & components["schemas"]["TransactionInstabank"] & components["schemas"]["TransactionDinteroPsp"] & components["schemas"]["TransactionKlarna"] & components["schemas"]["TransactionNetaxept"] & components["schemas"]["TransactionPayEx"] & components["schemas"]["TransactionSantander"] & components["schemas"]["TransactionSwish"] & components["schemas"]["TransactionVipps"];
+        } & components["schemas"]["TransactionBambora"] &
+            components["schemas"]["TransactionCollector"] &
+            components["schemas"]["TransactionInstabank"] &
+            components["schemas"]["TransactionDinteroPsp"] &
+            components["schemas"]["TransactionKlarna"] &
+            components["schemas"]["TransactionNetaxept"] &
+            components["schemas"]["TransactionPayEx"] &
+            components["schemas"]["TransactionSantander"] &
+            components["schemas"]["TransactionSwish"] &
+            components["schemas"]["TransactionVipps"];
         SettlementItem: {
             /** @description Unique identifier for the settlement
              *      */
@@ -5914,7 +6189,16 @@ export interface components {
             };
         };
         /** @enum {string} */
-        ApprovalStatus: "ACTIVE" | "DECLINED" | "UNDER_MANUAL_REVIEW" | "AUTOMATIC_REVIEW" | "WAITING_FOR_SIGNATURE" | "WAITING_FOR_DECLARATION" | "ERROR" | "ARCHIVED" | "WAITING_FOR_DETAILS";
+        ApprovalStatus:
+            | "ACTIVE"
+            | "DECLINED"
+            | "UNDER_MANUAL_REVIEW"
+            | "AUTOMATIC_REVIEW"
+            | "WAITING_FOR_SIGNATURE"
+            | "WAITING_FOR_DECLARATION"
+            | "ERROR"
+            | "ARCHIVED"
+            | "WAITING_FOR_DETAILS";
         ApprovalsPayoutDestinationResponse: components["schemas"]["ApprovalsPayoutDestination"] & {
             case_status?: components["schemas"]["ApprovalStatus"];
             links?: {
@@ -5928,7 +6212,12 @@ export interface components {
                  *
                  * @enum {string}
                  */
-                rel?: "contract_url" | "cdd_case_url" | "dintero_cdd_case_url" | "declaration_url" | "signed_contract_file_url";
+                rel?:
+                    | "contract_url"
+                    | "cdd_case_url"
+                    | "dintero_cdd_case_url"
+                    | "declaration_url"
+                    | "signed_contract_file_url";
             }[];
         };
         PaySessionBase: {
@@ -6055,7 +6344,8 @@ export interface components {
              *     `required` if Collector Bank payment is configured in and partial_payment is false.
              *     All items must include a unique `line_id`, quantity and amount
              *      */
-            items?: (components["schemas"]["OrderItem"] & components["schemas"]["OrderDiscountItem"])[];
+            items?: (components["schemas"]["OrderItem"] &
+                components["schemas"]["OrderDiscountItem"])[];
             discount_codes?: string[];
         };
         FundTransferCreateData: {
@@ -6226,7 +6516,10 @@ export interface components {
         };
         PaymentOperation: {
             /** @enum {string} */
-            content_type?: "application/json" | "application/javascript" | "text/html";
+            content_type?:
+                | "application/json"
+                | "application/javascript"
+                | "text/html";
             /**
              * @description The HTTP method to use when performing the operation
              *
@@ -6292,7 +6585,10 @@ export interface components {
                      */
                     url?: string;
                     publish?: components["schemas"]["PublishConfiguration"];
-                    session?: components["schemas"]["Id"] & components["schemas"]["Session"] & components["schemas"]["SessionRead"] & components["schemas"]["SessionCancelled"];
+                    session?: components["schemas"]["Id"] &
+                        components["schemas"]["Session"] &
+                        components["schemas"]["SessionRead"] &
+                        components["schemas"]["SessionCancelled"];
                 };
             };
         };
@@ -6537,7 +6833,9 @@ export interface components {
     requestBodies: {
         example_discount_codes_callback_urlOptions: {
             content: {
-                "application/json": components["schemas"]["Id"] & components["schemas"]["Session"] & components["schemas"]["SessionRead"];
+                "application/json": components["schemas"]["Id"] &
+                    components["schemas"]["Session"] &
+                    components["schemas"]["SessionRead"];
             };
         };
     };
@@ -6587,7 +6885,10 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SessionProfile"] & components["schemas"]["SessionCustomerTokens"] & components["schemas"]["SessionCustomerGiftcards"] & components["schemas"]["Metadata"];
+                "application/json": components["schemas"]["SessionProfile"] &
+                    components["schemas"]["SessionCustomerTokens"] &
+                    components["schemas"]["SessionCustomerGiftcards"] &
+                    components["schemas"]["Metadata"];
             };
         };
         responses: {
@@ -6606,7 +6907,10 @@ export interface operations {
                  *     - **`events.request_headers`** Include the event headers stored for each event
                  *     - **`initiating_system_request_headers`** Include the request headers from the initating system
                  *      */
-                includes?: ("events.request_headers" | "initiating_system_request_headers")[];
+                includes?: (
+                    | "events.request_headers"
+                    | "initiating_system_request_headers"
+                )[];
             };
             header?: never;
             path: {
@@ -6623,7 +6927,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Id"] & components["schemas"]["Session"] & components["schemas"]["SessionRead"] & components["schemas"]["SessionCancelled"];
+                    "application/json": components["schemas"]["Id"] &
+                        components["schemas"]["Session"] &
+                        components["schemas"]["SessionRead"] &
+                        components["schemas"]["SessionCancelled"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -6695,7 +7002,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Id"] & components["schemas"]["Session"] & components["schemas"]["SessionRead"] & components["schemas"]["SessionCancelled"];
+                    "application/json": components["schemas"]["Id"] &
+                        components["schemas"]["Session"] &
+                        components["schemas"]["SessionRead"] &
+                        components["schemas"]["SessionCancelled"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -6744,7 +7054,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Id"] & components["schemas"]["Session"] & components["schemas"]["SessionRead"] & components["schemas"]["SessionCancelled"];
+                    "application/json": components["schemas"]["Id"] &
+                        components["schemas"]["Session"] &
+                        components["schemas"]["SessionRead"] &
+                        components["schemas"]["SessionCancelled"];
                 };
             };
             400: components["responses"]["BadRequest"];
@@ -6791,7 +7104,8 @@ export interface operations {
                 "application/json": {
                     /** @description The session to create the payment token from
                      *      */
-                    session: components["schemas"]["SessionPaymentToken"] & components["schemas"]["Metadata"];
+                    session: components["schemas"]["SessionPaymentToken"] &
+                        components["schemas"]["Metadata"];
                     token_provider: components["schemas"]["TokenProvider"];
                 };
             };
@@ -6814,7 +7128,10 @@ export interface operations {
                  *
                  *     From 2023-09, `events.request_headers` and `initiating_system_request_headers` will be included by default
                  *      */
-                includes?: ("events.request_headers" | "initiating_system_request_headers")[];
+                includes?: (
+                    | "events.request_headers"
+                    | "initiating_system_request_headers"
+                )[];
             };
             header?: {
                 /** @description The name of the ecommerce solution
@@ -6950,7 +7267,10 @@ export interface operations {
                  *
                  *     From 2023-09, `events.request_headers` and `initiating_system_request_headers` will be included by default
                  *      */
-                includes?: ("events.request_headers" | "initiating_system_request_headers")[];
+                includes?: (
+                    | "events.request_headers"
+                    | "initiating_system_request_headers"
+                )[];
             };
             header?: {
                 /** @description The name of the ecommerce solution
@@ -7050,7 +7370,10 @@ export interface operations {
                  *
                  *     From 2023-09, `events.request_headers` and `initiating_system_request_headers` will be included by default
                  *      */
-                includes?: ("events.request_headers" | "initiating_system_request_headers")[];
+                includes?: (
+                    | "events.request_headers"
+                    | "initiating_system_request_headers"
+                )[];
             };
             header?: {
                 /** @description The name of the ecommerce solution
@@ -7113,7 +7436,13 @@ export interface operations {
                  *     - **`events.request_headers`** Include the event headers stored for each event
                  *     - **`initiating_system_request_headers`** Include the request headers from the initating system
                  *      */
-                includes?: ("card.payment_token" | "card.recurrence_token" | "session" | "events.request_headers" | "initiating_system_request_headers")[];
+                includes?: (
+                    | "card.payment_token"
+                    | "card.recurrence_token"
+                    | "session"
+                    | "events.request_headers"
+                    | "initiating_system_request_headers"
+                )[];
             };
             header?: never;
             path: {
@@ -7196,7 +7525,20 @@ export interface operations {
                 starting_after?: components["parameters"]["StartingAfter"];
                 /** @description The status of the transaction.
                  *      */
-                status?: ("AUTHORIZATION_VOIDED" | "AUTHORIZED" | "CAPTURED" | "DECLINED" | "FAILED" | "INITIATED" | "ON_HOLD" | "PARTIALLY_CAPTURED" | "PARTIALLY_REFUNDED" | "PARTIALLY_CAPTURED_REFUNDED" | "REFUNDED" | "UNKNOWN")[];
+                status?: (
+                    | "AUTHORIZATION_VOIDED"
+                    | "AUTHORIZED"
+                    | "CAPTURED"
+                    | "DECLINED"
+                    | "FAILED"
+                    | "INITIATED"
+                    | "ON_HOLD"
+                    | "PARTIALLY_CAPTURED"
+                    | "PARTIALLY_REFUNDED"
+                    | "PARTIALLY_CAPTURED_REFUNDED"
+                    | "REFUNDED"
+                    | "UNKNOWN"
+                )[];
                 /** @description The type of payment product used */
                 payment_product?: string[];
                 /** @description The payment product type */
@@ -7650,7 +7992,17 @@ export interface operations {
                 payout_destination_id?: string;
                 /** @description filter CDDs by status
                  *      */
-                case_status?: ("ACTIVE" | "DECLINED" | "UNDER_MANUAL_REVIEW" | "AUTOMATIC_REVIEW" | "WAITING_FOR_SIGNATURE" | "WAITING_FOR_DECLARATION" | "ERROR" | "ARCHIVED" | "WAITING_FOR_DETAILS")[];
+                case_status?: (
+                    | "ACTIVE"
+                    | "DECLINED"
+                    | "UNDER_MANUAL_REVIEW"
+                    | "AUTOMATIC_REVIEW"
+                    | "WAITING_FOR_SIGNATURE"
+                    | "WAITING_FOR_DECLARATION"
+                    | "ERROR"
+                    | "ARCHIVED"
+                    | "WAITING_FOR_DETAILS"
+                )[];
             };
             header?: never;
             path: {
@@ -7711,7 +8063,10 @@ export interface operations {
                  *
                  * @example strict-merchant-reference
                  */
-                "Dintero-Feature-Toggles"?: ("strict-merchant-reference" | "strict-success-merchant-reference")[];
+                "Dintero-Feature-Toggles"?: (
+                    | "strict-merchant-reference"
+                    | "strict-success-merchant-reference"
+                )[];
                 /** @description The name of the ecommerce solution
                  *
                  *     Example: `woocommerce`
@@ -7741,7 +8096,9 @@ export interface operations {
                 "application/json": {
                     /** @description The session to create the payment from
                      *      */
-                    session?: components["schemas"]["PaySessionOptions"] & components["schemas"]["SessionCustomerTokens"] & components["schemas"]["Metadata"];
+                    session?: components["schemas"]["PaySessionOptions"] &
+                        components["schemas"]["SessionCustomerTokens"] &
+                        components["schemas"]["Metadata"];
                     payment?: components["schemas"]["PayPayment"];
                 };
             };
@@ -7753,7 +8110,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Transaction"] & components["schemas"]["SessionPayResult"];
+                    "application/json": components["schemas"]["Transaction"] &
+                        components["schemas"]["SessionPayResult"];
                 };
             };
             /** @description Bad / Invalid request */
@@ -7762,7 +8120,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Error"] & components["schemas"]["SessionPayResult"];
+                    "application/json": components["schemas"]["Error"] &
+                        components["schemas"]["SessionPayResult"];
                 };
             };
             401: components["responses"]["AccessForbidden"];
@@ -7773,7 +8132,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Error"] & components["schemas"]["SessionPayResult"];
+                    "application/json": components["schemas"]["Error"] &
+                        components["schemas"]["SessionPayResult"];
                 };
             };
             /** @description Request failed with 4XX error */
@@ -7782,7 +8142,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Error"] & components["schemas"]["SessionPayResult"];
+                    "application/json": components["schemas"]["Error"] &
+                        components["schemas"]["SessionPayResult"];
                 };
             };
         };
