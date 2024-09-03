@@ -6,7 +6,12 @@ export type ClientConfig = {
     clientId: string;
     clientSecret: string;
     endpoint?: string;
-    fetch?: (input: Request) => Promise<Response>;
+    fetch?: typeof fetch;
+};
+
+export type Token = {
+    value: string | null;
+    expiresAt: number;
 };
 
 const client = (config: ClientConfig) => {

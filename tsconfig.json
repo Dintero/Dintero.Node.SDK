@@ -3,8 +3,8 @@
     "compilerOptions": {
         "declaration": true,
         "target": "es2022",
-        "module": "esnext",
-        "moduleResolution": "bundler",
+        "module": "CommonJS",
+        "moduleResolution": "node",
         "outDir": "dist",
         "strict": true,
         "baseUrl": "./",

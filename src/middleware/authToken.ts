@@ -1,4 +1,4 @@
-import { request, Dispatcher } from "undici";
+import { request, type Dispatcher } from "undici";
 
 interface TokenResponse {
     access_token: string;

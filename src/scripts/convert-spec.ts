@@ -13,6 +13,7 @@ export async function generateTypes() {
         const yamlContent = await body.text();
 
         // Load the YAML spec
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         const swaggerDoc = yaml.load(yamlContent) as any;
 
         // Convert Swagger 2.0 to OpenAPI 3.0
@@ -32,7 +33,7 @@ export async function generateTypes() {
 
         // Define the output directory and file path
         const outputDir = path.join(path.resolve(), "src/types/payments");
-        const outputPath = path.join(outputDir, "generated#2.d.ts");
+        const outputPath = path.join(outputDir, "generated.d.ts");
 
         // Ensure the output directory exists
         if (!fs.existsSync(outputDir)) {
