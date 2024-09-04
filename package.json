@@ -37,7 +37,6 @@
         "node": ">=20.0.0"
     },
     "dependencies": {
-        "node-fetch": "^3.3.2",
         "openapi-fetch": "0.12.0"
     }
 }
