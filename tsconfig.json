@@ -3,13 +3,14 @@
     "compilerOptions": {
         "declaration": true,
         "target": "es2022",
-        "module": "commonjs",
         "outDir": "dist",
         "strict": true,
         "baseUrl": "./",
         "types": ["jest", "node"],
         "noUnusedLocals": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "noUncheckedIndexedAccess": true,
+        "esModuleInterop": true
     },
     "include": ["src/**/*.ts", "test/**/*.ts"],
     "exclude": ["node_modules"]
