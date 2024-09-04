@@ -1,5 +1,5 @@
-import createClientWrapper from "../src/client/client";
 import createClient from "openapi-fetch";
+import createClientWrapper from "../src/client/client";
 import type { paths } from "../src/generated/payments";
 
 jest.mock("openapi-fetch");
