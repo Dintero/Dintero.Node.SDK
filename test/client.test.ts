@@ -1,7 +1,7 @@
+import { afterEach, beforeAll, expect, test } from "@jest/globals";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import createClient from "openapi-fetch";
-import { afterEach, beforeAll, expect, test } from "@jest/globals";
 import type { paths } from "../src/generated/payments";
 
 const server = setupServer();

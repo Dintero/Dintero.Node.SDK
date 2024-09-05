@@ -1,5 +1,8 @@
+// client.ts
 import createOpenApiFetchClient, { type Middleware } from "openapi-fetch";
 import type { paths } from "../generated/payments";
+import { fetchAccessToken } from "../middleware/authMiddleware";
+
 export type CheckoutPaths = Pick<
     paths,
     | "/sessions-profile"
@@ -13,6 +16,7 @@ export type CheckoutPaths = Pick<
     | "/transactions/{id}"
     | "/transactions"
 >;
+
 export type CorePaths = Pick<
     paths,
     | "/accounts/{aid}/settlements"
@@ -26,19 +30,22 @@ export type CorePaths = Pick<
     | "/v2/accounts/{aid}/payout/payout-destinations/{payout_destination_id}/balances"
     | "/v2/accounts/{aid}/payout/payout-destinations/{payout_destination_id}/transfers"
 >;
-const createAuthorizationMiddleware = (
-    options: Required<ClientOptions>,
-): Middleware => {
+
+const createAuthorizationMiddleware = (tokenData: {
+    accessToken: string;
+    expiresIn: number;
+}): Middleware => {
     return {
         async onRequest({ request }) {
             request.headers.set(
                 "Authorization",
-                `Bearer PLACEHOLDER_TOKEN(TODO)`,
+                `Bearer ${tokenData.accessToken}`,
             );
             return request;
         },
     };
 };
+
 type ClientOptions = {
     clientId: string;
     clientSecret: string;
@@ -46,15 +53,22 @@ type ClientOptions = {
     core?: { baseUrl: string };
     checkout?: { baseUrl: string };
 };
-export const createClient = (options: ClientOptions) => {
+
+export const createClient = async (options: ClientOptions) => {
     const config: Required<ClientOptions> = {
         checkout: { baseUrl: "https://checkout.dintero.com" },
         core: { baseUrl: "https://api.dintero.com" },
         ...options,
     };
-    const authMiddleware = createAuthorizationMiddleware(config);
+
+    const tokenData = await fetchAccessToken();
+    const authMiddleware = createAuthorizationMiddleware(tokenData);
+
     const checkout = createOpenApiFetchClient<CheckoutPaths>(config.checkout);
     const core = createOpenApiFetchClient<CorePaths>(config.core);
+
     core.use(authMiddleware);
+    checkout.use(authMiddleware);
+
     return { checkout, core };
 };
