@@ -9,7 +9,9 @@
     "author": "Dintero <support@dintero.com> (https://dintero.com/)",
     "jest": {
         "preset": "ts-jest",
-        "testMatch": ["**/test/**/*.test.ts"]
+        "testMatch": [
+            "**/test/**/*.test.ts"
+        ]
     },
     "scripts": {
         "build": "yarn -s build-ts && yarn -s lint",
@@ -26,6 +28,7 @@
         "@types/swagger2openapi": "7.0.4",
         "jest": "29.7.0",
         "js-yaml": "4.1.0",
+        "msw": "^2.4.2",
         "openapi-typescript": "7.3.0",
         "swagger2openapi": "7.0.8",
         "ts-jest": "29.2.5",

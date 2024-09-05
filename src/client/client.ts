@@ -1,6 +1,5 @@
-import createClient, { type Middleware } from "openapi-fetch";
+import createOpenApiFetchClient, { type Middleware } from "openapi-fetch";
 import type { paths } from "../generated/payments";
-
 export type CheckoutPaths = Pick<
     paths,
     | "/sessions-profile"
@@ -14,7 +13,6 @@ export type CheckoutPaths = Pick<
     | "/transactions/{id}"
     | "/transactions"
 >;
-
 export type CorePaths = Pick<
     paths,
     | "/accounts/{aid}/settlements"
@@ -28,49 +26,35 @@ export type CorePaths = Pick<
     | "/v2/accounts/{aid}/payout/payout-destinations/{payout_destination_id}/balances"
     | "/v2/accounts/{aid}/payout/payout-destinations/{payout_destination_id}/transfers"
 >;
-
-// Create client for checkout with middleware
-const createCheckoutClient = (authToken: string) => {
-    const baseUrl = "https://checkout.dintero.com";
-
-    // Middleware to add Authorization header
-    const authMiddleware: Middleware = {
-        async onRequest({ request }) {
-            request.headers.set("Authorization", `Bearer ${authToken}`);
-            return request;
-        },
-    };
-
-    const client = createClient<CheckoutPaths>({ baseUrl });
-    client.use(authMiddleware);
-
-    return client;
-};
-
-// Create client for core with middleware
-const createCoreClient = (authToken: string) => {
-    const baseUrl = "https://api.dintero.com";
-
-    // Middleware to add Authorization header
-    const authMiddleware: Middleware = {
-        async onRequest({ request }) {
-            request.headers.set("Authorization", `Bearer ${authToken}`);
-            return request;
-        },
-    };
-
-    const client = createClient<CorePaths>({ baseUrl });
-    client.use(authMiddleware);
-
-    return client;
-};
-
-// Wrapper to create both clients
-const createClientWrapper = (authToken: string) => {
+const createAuthorizationMiddleware = (
+    options: Required<ClientOptions>,
+): Middleware => {
     return {
-        checkout: createCheckoutClient(authToken),
-        core: createCoreClient(authToken),
+        async onRequest({ request }) {
+            request.headers.set(
+                "Authorization",
+                `Bearer PLACEHOLDER_TOKEN(TODO)`,
+            );
+            return request;
+        },
     };
 };
-
-export default createClientWrapper;
+type ClientOptions = {
+    clientId: string;
+    clientSecret: string;
+    audience: string;
+    core?: { baseUrl: string };
+    checkout?: { baseUrl: string };
+};
+export const createClient = (options: ClientOptions) => {
+    const config: Required<ClientOptions> = {
+        checkout: { baseUrl: "https://checkout.dintero.com" },
+        core: { baseUrl: "https://api.dintero.com" },
+        ...options,
+    };
+    const authMiddleware = createAuthorizationMiddleware(config);
+    const checkout = createOpenApiFetchClient<CheckoutPaths>(config.checkout);
+    const core = createOpenApiFetchClient<CorePaths>(config.core);
+    core.use(authMiddleware);
+    return { checkout, core };
+};

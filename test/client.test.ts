@@ -1,120 +1,92 @@
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
 import createClient from "openapi-fetch";
-import createClientWrapper from "../src/client/client";
+import { afterEach, beforeAll, expect, test } from "@jest/globals";
 import type { paths } from "../src/generated/payments";
 
-jest.mock("openapi-fetch");
+const server = setupServer();
 
-describe("createClientWrapper", () => {
-    const mockCreateClient = createClient as jest.MockedFunction<
-        typeof createClient
-    >;
-    const mockUse = jest.fn();
-    const mockRequest = jest.fn();
-
-    beforeEach(() => {
-        jest.clearAllMocks();
-
-        mockCreateClient.mockImplementation(() => {
-            return {
-                use: mockUse,
-                GET: jest.fn().mockImplementation((url, init) => {
-                    if (
-                        url === "/accounts/{aid}/settlements" &&
-                        init?.params?.path?.aid
-                    ) {
-                        const { aid } = init.params.path;
-                        const finalUrl = url.replace("{aid}", aid);
-
-                        return mockRequest(finalUrl, init);
-                    }
-                    return mockRequest(url, init);
-                }),
-                POST: mockRequest,
-                PUT: mockRequest,
-                DELETE: mockRequest,
-            } as any;
-        });
+beforeAll(() => {
+    server.listen({
+        onUnhandledRequest: (request) => {
+            throw new Error(
+                `No request handler found for ${request.method} ${request.url}`,
+            );
+        },
     });
+});
 
-    it("should create a checkout client with the correct base URL and middleware", async () => {
-        const authToken = "test-token";
-        const { checkout } = createClientWrapper(authToken);
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
-        expect(mockCreateClient).toHaveBeenCalledWith({
-            baseUrl: "https://checkout.dintero.com",
-        });
+test("POST /sessions-profile", async () => {
+    const rawData = { success: true };
+    const BASE_URL = "https://checkout.dintero.com";
 
-        expect(mockUse).toHaveBeenCalled();
-
-        const mockRequestObject = { headers: new Headers() };
-        const middlewareFn = mockUse.mock.calls[0][0].onRequest;
-        await middlewareFn({ request: mockRequestObject } as any);
-
-        expect(mockRequestObject.headers.get("Authorization")).toBe(
-            "Bearer test-token",
-        );
-
-        const requestBody: paths["/sessions-profile"]["post"]["requestBody"]["content"]["application/json"] =
-            {
-                url: { return_url: "https://example.com" },
-                order: {
+    const requestBody = {
+        url: { return_url: "https://example.com" },
+        order: {
+            amount: 1000,
+            currency: "NOK",
+            items: [
+                {
+                    id: "item1",
+                    line_id: "line1",
+                    description: "Item 1",
                     amount: 1000,
-                    currency: "NOK",
-                    items: [
-                        {
-                            id: "item1",
-                            line_id: "line1",
-                            description: "Item 1",
-                            amount: 1000,
-                            quantity: 1,
-                            vat_amount: 0,
-                            vat: 0,
-                            eligible_for_discount: false,
-                        },
-                    ],
-                    partial_payment: false,
-                    merchant_reference: "ref123",
+                    quantity: 1,
+                    vat_amount: 0,
+                    vat: 0,
+                    eligible_for_discount: false,
                 },
-                profile_id: "profile123",
-            };
+            ],
+            partial_payment: false,
+            merchant_reference: "ref123",
+        },
+        profile_id: "profile123",
+    };
 
-        await checkout.POST("/sessions-profile", { body: requestBody });
+    server.use(
+        http.post(`${BASE_URL}/sessions-profile`, () => {
+            return HttpResponse.json(rawData, { status: 200 });
+        }),
+    );
 
-        expect(mockRequest).toHaveBeenCalled();
+    const client = createClient<paths>({
+        baseUrl: BASE_URL,
     });
 
-    it("should create a core client with the correct base URL and middleware", async () => {
-        const authToken = "test-token";
-        const { core } = createClientWrapper(authToken);
+    const { data, error } = await client.POST("/sessions-profile", {
+        body: requestBody,
+    });
 
-        expect(mockCreateClient).toHaveBeenCalledWith({
-            baseUrl: "https://api.dintero.com",
-        });
+    expect(data).toEqual(rawData);
+    expect(error).toBeUndefined();
+});
 
-        expect(mockUse).toHaveBeenCalled();
+test("my API call", async () => {
+    const rawData = { test: { data: "foo" } };
+    const BASE_URL = "https://api.dintero.com";
+    const testAid = "12345";
 
-        const mockRequestObject = { headers: new Headers() };
-        const middlewareFn = mockUse.mock.calls[1][0].onRequest;
-        await middlewareFn({ request: mockRequestObject } as any);
+    server.use(
+        http.get(`${BASE_URL}/accounts/${testAid}/settlements`, () => {
+            return HttpResponse.json(rawData, { status: 200 });
+        }),
+    );
 
-        expect(mockRequestObject.headers.get("Authorization")).toBe(
-            "Bearer test-token",
-        );
+    const client = createClient<paths>({
+        baseUrl: BASE_URL,
+    });
 
-        const aid = "test-aid";
-        await core.GET("/accounts/{aid}/settlements", {
-            params: {
-                path: { aid },
+    const { data, error } = await client.GET("/accounts/{aid}/settlements", {
+        params: {
+            path: {
+                aid: testAid,
             },
-        });
-
-        expect(mockRequest).toHaveBeenCalledWith(
-            `/accounts/${aid}/settlements`,
-            expect.objectContaining({
-                params: {
-                    path: { aid },
-                },
-            }),
-        );
+        },
     });
+
+    expect(data).toEqual(rawData);
+    expect(error).toBeUndefined();
 });
