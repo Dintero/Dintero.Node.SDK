@@ -1,7 +1,11 @@
 // client.ts
-import createOpenApiFetchClient, { type Middleware } from "openapi-fetch";
+import createOpenApiFetchClient from "openapi-fetch";
 import type { paths } from "../generated/payments";
-import { fetchAccessToken } from "../middleware/authMiddleware";
+import {
+    createAuthMiddleware,
+    createVersionPrefixMiddleware,
+} from "./middleware";
+import type { ClientOptions } from "./types";
 
 export type CheckoutPaths = Pick<
     paths,
@@ -31,44 +35,21 @@ export type CorePaths = Pick<
     | "/v2/accounts/{aid}/payout/payout-destinations/{payout_destination_id}/transfers"
 >;
 
-const createAuthorizationMiddleware = (tokenData: {
-    accessToken: string;
-    expiresIn: number;
-}): Middleware => {
-    return {
-        async onRequest({ request }) {
-            request.headers.set(
-                "Authorization",
-                `Bearer ${tokenData.accessToken}`,
-            );
-            return request;
-        },
-    };
-};
-
-type ClientOptions = {
-    clientId: string;
-    clientSecret: string;
-    audience: string;
-    core?: { baseUrl: string };
-    checkout?: { baseUrl: string };
-};
-
-export const createClient = async (options: ClientOptions) => {
+export const createClient = (options: ClientOptions) => {
     const config: Required<ClientOptions> = {
         checkout: { baseUrl: "https://checkout.dintero.com" },
         core: { baseUrl: "https://api.dintero.com" },
         ...options,
     };
 
-    const tokenData = await fetchAccessToken();
-    const authMiddleware = createAuthorizationMiddleware(tokenData);
+    const authMiddleware = createAuthMiddleware(config);
+    const versionPrefixMiddleware = createVersionPrefixMiddleware();
 
     const checkout = createOpenApiFetchClient<CheckoutPaths>(config.checkout);
     const core = createOpenApiFetchClient<CorePaths>(config.core);
 
-    core.use(authMiddleware);
-    checkout.use(authMiddleware);
+    core.use(versionPrefixMiddleware, authMiddleware);
+    checkout.use(versionPrefixMiddleware, authMiddleware);
 
     return { checkout, core };
 };

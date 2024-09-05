@@ -1,8 +1,7 @@
 import { afterEach, beforeAll, expect, test } from "@jest/globals";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import createClient from "openapi-fetch";
-import type { paths } from "../src/generated/payments";
+import { createClient } from "../src/client/client";
 
 const server = setupServer();
 
@@ -21,7 +20,6 @@ afterAll(() => server.close());
 
 test("POST /sessions-profile", async () => {
     const rawData = { success: true };
-    const BASE_URL = "https://checkout.dintero.com";
 
     const requestBody = {
         url: { return_url: "https://example.com" },
@@ -47,46 +45,80 @@ test("POST /sessions-profile", async () => {
     };
 
     server.use(
-        http.post(`${BASE_URL}/sessions-profile`, () => {
+        http.post(
+            "https://api.dintero.com/v1/accounts/T12345678/auth/token",
+            () => {
+                return HttpResponse.json(
+                    {
+                        access_token: "eyJhbGci...t7P4",
+                        token_type: "Bearer",
+                        expires_in: 86400,
+                    },
+                    { status: 200 },
+                );
+            },
+        ),
+        http.post("https://checkout.dintero.com/v1/sessions-profile", () => {
             return HttpResponse.json(rawData, { status: 200 });
         }),
     );
 
-    const client = createClient<paths>({
-        baseUrl: BASE_URL,
+    const client = createClient({
+        clientId: "CLIENTID",
+        clientSecret: "CLIENTSECRET",
+        audience: "https://T12345678@test.dintero.com/v1/accounts/T12345678",
     });
 
-    const { data, error } = await client.POST("/sessions-profile", {
+    const { data, error } = await client.checkout.POST("/sessions-profile", {
         body: requestBody,
     });
 
-    expect(data).toEqual(rawData);
     expect(error).toBeUndefined();
+    expect(data).toEqual(rawData);
 });
 
 test("my API call", async () => {
     const rawData = { test: { data: "foo" } };
-    const BASE_URL = "https://api.dintero.com";
-    const testAid = "12345";
 
     server.use(
-        http.get(`${BASE_URL}/accounts/${testAid}/settlements`, () => {
-            return HttpResponse.json(rawData, { status: 200 });
-        }),
+        http.post(
+            "https://api.dintero.com/v1/accounts/T12345678/auth/token",
+            () => {
+                return HttpResponse.json(
+                    {
+                        access_token: "eyJhbGci...t7P4",
+                        token_type: "Bearer",
+                        expires_in: 86400,
+                    },
+                    { status: 200 },
+                );
+            },
+        ),
+        http.get(
+            "https://api.dintero.com/v1/accounts/T12345678/settlements",
+            () => {
+                return HttpResponse.json(rawData, { status: 200 });
+            },
+        ),
     );
 
-    const client = createClient<paths>({
-        baseUrl: BASE_URL,
+    const client = createClient({
+        clientId: "CLIENTID",
+        clientSecret: "CLIENTSECRET",
+        audience: "https://T12345678@test.dintero.com/v1/accounts/T12345678",
     });
 
-    const { data, error } = await client.GET("/accounts/{aid}/settlements", {
-        params: {
-            path: {
-                aid: testAid,
+    const { data, error } = await client.core.GET(
+        "/accounts/{aid}/settlements",
+        {
+            params: {
+                path: {
+                    aid: "T12345678",
+                },
             },
         },
-    });
+    );
 
-    expect(data).toEqual(rawData);
     expect(error).toBeUndefined();
+    expect(data).toEqual(rawData);
 });

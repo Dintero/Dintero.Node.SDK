@@ -1,12 +1,16 @@
 import type { MiddlewareCallbackParams } from "openapi-fetch";
-import authMiddleware, {
+import {
+    createAuthMiddleware,
     fetchAccessToken,
-} from "../src/middleware/authMiddleware";
+} from "../src/client/middleware";
 
-// Mock environment variables
-process.env.OID = "test-account-id";
-process.env.CLIENT_ID = "test-client-id";
-process.env.CLIENT_SECRET = "test-client-secret";
+const config = {
+    clientId: "CLIENTID",
+    clientSecret: "CLIENTSECRET",
+    audience: "https://T12345678@test.dintero.com/v1/accounts/T12345678",
+    core: { baseUrl: "https://api.dintero.test" },
+    checkout: { baseUrl: "https://checkout.dintero.test" },
+};
 
 const mockFetch = (response: Response) =>
     jest.spyOn(global, "fetch").mockResolvedValue(response);
@@ -37,7 +41,7 @@ test("fetchAccessToken should fetch and return a new access token", async () => 
 
     mockFetch(mockResponse);
 
-    const tokenData = await fetchAccessToken();
+    const tokenData = await fetchAccessToken(config);
     expect(tokenData.accessToken).toBe("mock-access-token");
     expect(tokenData.expiresIn).toBe(3600);
 });
@@ -71,6 +75,8 @@ test("middleware should set Authorization header", async () => {
         schemaPath: "",
         params: {},
     };
+
+    const authMiddleware = createAuthMiddleware(config);
 
     await authMiddleware.onRequest?.(mockParams);
 
