@@ -1,7 +1,7 @@
+import type { MiddlewareCallbackParams } from "openapi-fetch";
 import authMiddleware, {
     fetchAccessToken,
 } from "../src/middleware/authMiddleware";
-import type { MiddlewareCallbackParams } from "openapi-fetch";
 
 // Mock environment variables
 process.env.OID = "test-account-id";
@@ -56,7 +56,7 @@ test("middleware should set Authorization header", async () => {
 
     const mockRequest = {
         headers: new Map<string, string>(),
-    } as any;
+    } as unknown as Request;
 
     const mockParams: MiddlewareCallbackParams = {
         request: mockRequest,
