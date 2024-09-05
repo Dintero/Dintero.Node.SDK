@@ -39,7 +39,7 @@ const createAuthorizationMiddleware = (tokenData: {
         async onRequest({ request }) {
             request.headers.set(
                 "Authorization",
-                `Bearer ${tokenData.accessToken}`,
+                "Bearer PLACEHOLDER_TOKEN(TODO)",
             );
             return request;
         },
