@@ -4,6 +4,8 @@
         "declaration": true,
         "target": "es2022",
         "outDir": "dist",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "strict": true,
         "baseUrl": "./",
         "types": ["jest", "node"],
@@ -12,6 +14,6 @@
         "noUncheckedIndexedAccess": true,
         "esModuleInterop": true
     },
-    "include": ["src/**/*.ts", "test/**/*.ts"],
+    "include": ["src/**/*.ts", "src/test/**/*.ts"],
     "exclude": ["node_modules"]
 }
