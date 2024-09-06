@@ -16,14 +16,6 @@ const config = {
 const mockFetch = (response: Response) =>
     jest.spyOn(global, "fetch").mockResolvedValue(response);
 
-beforeEach(() => {
-    mockFetch({
-        status: 200,
-        statusText: "OK",
-        text: async () => JSON.stringify({}),
-    } as Response);
-});
-
 afterEach(() => {
     jest.restoreAllMocks();
 });
