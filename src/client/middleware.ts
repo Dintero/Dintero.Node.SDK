@@ -1,11 +1,16 @@
-// authMiddleware.ts
 import type { Middleware } from "openapi-fetch";
 import type { ClientOptions } from "./types";
 
 export const fetchAccessToken = async (config: Required<ClientOptions>) => {
     const audience = new URL(config.audience);
+    console.log("Parsed audience URL:", audience.toString());
+
     const accountId = audience.username as string;
+    console.log("Extracted account ID:", accountId);
+
     const url = `${config.core.baseUrl}/v1/accounts/${accountId}/auth/token`;
+    console.log("Constructed URL:", url);
+
     const authToken = Buffer.from(
         `${config.clientId}:${config.clientSecret}`,
     ).toString("base64");
@@ -45,7 +50,7 @@ export const createAuthMiddleware = (
     let accessToken: string | undefined = undefined;
     let tokenExpiry = 0;
     return {
-        async onRequest({ request, params }) {
+        async onRequest({ request }) {
             if (request.headers.get("Authorization")) {
                 return request;
             }
@@ -63,6 +68,7 @@ export const createAuthMiddleware = (
         },
     };
 };
+
 export const createVersionPrefixMiddleware = (): Middleware => ({
     async onRequest({ request, schemaPath }) {
         if (schemaPath.startsWith("/v")) {

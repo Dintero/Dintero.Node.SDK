@@ -1,6 +1,7 @@
-import type { MiddlewareCallbackParams } from "openapi-fetch";
+import type { BodyType, MiddlewareCallbackParams } from "openapi-fetch";
 import {
     createAuthMiddleware,
+    createVersionPrefixMiddleware,
     fetchAccessToken,
 } from "../src/client/middleware";
 
@@ -16,7 +17,6 @@ const mockFetch = (response: Response) =>
     jest.spyOn(global, "fetch").mockResolvedValue(response);
 
 beforeEach(() => {
-    // Reset fetch mock to default behavior before each test
     mockFetch({
         status: 200,
         statusText: "OK",
@@ -25,62 +25,130 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    jest.restoreAllMocks(); // Restore original fetch implementation
+    jest.restoreAllMocks();
 });
 
-test("fetchAccessToken should fetch and return a new access token", async () => {
-    const mockResponse = {
-        status: 200,
-        statusText: "OK",
-        text: async () =>
-            JSON.stringify({
-                access_token: "mock-access-token",
-                expires_in: 3600,
-            }),
-    } as Response;
+describe(fetchAccessToken.name, () => {
+    test("should fetch and return a new access token", async () => {
+        const mockResponse = {
+            status: 200,
+            statusText: "OK",
+            text: async () =>
+                JSON.stringify({
+                    access_token: "mock-access-token",
+                    expires_in: 3600,
+                }),
+        } as Response;
 
-    mockFetch(mockResponse);
+        mockFetch(mockResponse);
 
-    const tokenData = await fetchAccessToken(config);
-    expect(tokenData.accessToken).toBe("mock-access-token");
-    expect(tokenData.expiresIn).toBe(3600);
+        const tokenData = await fetchAccessToken(config);
+        expect(tokenData.accessToken).toBe("mock-access-token");
+        expect(tokenData.expiresIn).toBe(3600);
+    });
 });
 
-test("middleware should set Authorization header", async () => {
-    const mockResponse = {
-        status: 200,
-        text: async () =>
-            JSON.stringify({
-                access_token: "mock-access-token",
-                expires_in: 3600,
-            }),
-    } as Response;
+describe(createAuthMiddleware.name, () => {
+    test("should set Authorization header", async () => {
+        const mockResponse = {
+            status: 200,
+            text: async () =>
+                JSON.stringify({
+                    access_token: "mock-access-token",
+                    expires_in: 3600,
+                }),
+        } as Response;
 
-    mockFetch(mockResponse);
+        mockFetch(mockResponse);
 
-    const mockRequest = {
-        headers: new Map<string, string>(),
-    } as unknown as Request;
+        const request = new Request(
+            "https://api.dintero.test/v1/accounts/T12345678/settlements",
+        );
 
-    const mockParams: MiddlewareCallbackParams = {
-        request: mockRequest,
-        id: "test-id",
-        options: {
-            baseUrl: "https://api.example.com",
-            parseAs: "json",
-            querySerializer: () => "",
-            bodySerializer: () => "",
-            fetch: global.fetch as unknown as typeof fetch,
-        },
-        schemaPath: "",
-        params: {},
-    };
+        const mockParams: MiddlewareCallbackParams = {
+            request: request,
+            id: "test-id",
+            options: {
+                baseUrl: "https://api.example.com",
+                parseAs: "json",
+                querySerializer: jest.fn(),
+                bodySerializer: jest.fn(),
+                fetch: jest.fn(),
+            },
+            schemaPath: "/accounts/{aid}/settlements",
+            params: {},
+        };
 
-    const authMiddleware = createAuthMiddleware(config);
+        const authMiddleware = createAuthMiddleware(config);
 
-    await authMiddleware.onRequest?.(mockParams);
+        await authMiddleware.onRequest?.(mockParams);
 
-    expect(mockRequest.headers.get("Authorization")).toBe(
-        "Bearer mock-access-token",
-    );
+        expect(request.headers.get("Authorization")).toBe(
+            "Bearer mock-access-token",
+        );
+    });
+});
+
+describe(createVersionPrefixMiddleware.name, () => {
+    test("should prefix the request URL path with /v1 if schemaPath does not start with /v", async () => {
+        const middleware = createVersionPrefixMiddleware();
+        const request = new Request("https://api.example.com/test");
+
+        const mockParams = {
+            request,
+            schemaPath: "/test",
+            id: "test-id",
+            options: {
+                baseUrl: "https://api.example.com",
+                parseAs: "json" as keyof BodyType<unknown>,
+                querySerializer: jest.fn(),
+                bodySerializer: jest.fn(),
+                fetch: jest.fn(),
+            },
+            params: {},
+        };
+
+        if (middleware.onRequest) {
+            const modifiedRequest = await middleware.onRequest(mockParams);
+            expect(modifiedRequest).toBeDefined();
+            if (modifiedRequest) {
+                expect(modifiedRequest.url).toBe(
+                    "https://api.example.com/v1/test",
+                );
+            }
+        } else {
+            fail("onRequest function is not defined in the middleware.");
+        }
+    });
+
+    test("should not modify the request URL if schemaPath starts with /v", async () => {
+        const middleware = createVersionPrefixMiddleware();
+        const request = new Request("https://api.example.com/v1/test");
+
+        const mockParams = {
+            request,
+            schemaPath: "/v1/test",
+            id: "test-id",
+            options: {
+                baseUrl: "https://api.example.com/v",
+                parseAs: "json" as keyof BodyType<unknown>,
+                querySerializer: jest.fn(),
+                bodySerializer: jest.fn(),
+                fetch: jest.fn(),
+            },
+            params: {},
+        };
+
+        if (middleware.onRequest) {
+            const modifiedRequest = await middleware.onRequest(mockParams);
+            expect(modifiedRequest).toBeDefined();
+            if (modifiedRequest) {
+                expect(modifiedRequest.url).toBe(
+                    "https://api.example.com/v1/test",
+                );
+            }
+        } else {
+            fail("onRequest function is not defined in the middleware.");
+        }
+    });
 });
