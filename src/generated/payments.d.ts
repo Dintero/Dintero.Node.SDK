@@ -6057,7 +6057,7 @@ export interface components {
             items?: (components["schemas"]["OrderItem"] & components["schemas"]["OrderDiscountItem"])[];
             discount_codes?: string[];
         };
-        FundTransferCreateData: {
+        FundTransferCreateDataV2: {
             /** @description A string id that uniquely identifies the fund transfer. The `id` is used
              *     for idempotent processing so you can safely retry the request with same
              *     id if you don't receive a response (for example, in case of a timeout)
@@ -6076,7 +6076,7 @@ export interface components {
         };
         /** @description This object contains the result from initiating a transfer fund
          *      */
-        FundTransfer: components["schemas"]["FundTransferCreateData"] & {
+        FundTransferV2: components["schemas"]["FundTransferCreateDataV2"] & {
             account_id: string;
             /**
              * Format: date-time
@@ -6088,7 +6088,7 @@ export interface components {
         };
         /** @description Seller balance for a currency
          *      */
-        PayoutDestinationBalance: {
+        PayoutDestinationBalanceV2: {
             readonly account_id: string;
             /** @description A string id that uniquely identifies the payout destination configuration id */
             readonly payout_destination_config_id: string;
@@ -6099,8 +6099,8 @@ export interface components {
             /** @description Amount in the smallest unit of the currency */
             amount: number;
         };
-        PayoutDestinationBalances: components["schemas"]["PayoutDestinationBalance"][];
-        PaymentMatchReportData: {
+        PayoutDestinationBalancesV2: components["schemas"]["PayoutDestinationBalanceV2"][];
+        PaymentMatchReportDataV2: {
             /** @description Time of first payment event in this transfer */
             start_at?: string;
             /** @description Time of last payment event in this transfer */
@@ -6167,7 +6167,7 @@ export interface components {
         };
         /** @description Seller transfer entry
          *      */
-        PayoutDestinationTransferEntry: {
+        PayoutDestinationTransferEntryV2: {
             /** @description A string id that uniquely identifies the entry in the ledger */
             readonly ledger_entry_id: string;
             /** @description The Dintero account id */
@@ -6234,9 +6234,9 @@ export interface components {
              *     Only applicable for type `outbound`
              *      */
             readonly outbound_message: string | null;
-            payment_match_report_data?: components["schemas"]["PaymentMatchReportData"];
+            payment_match_report_data?: components["schemas"]["PaymentMatchReportDataV2"];
         };
-        PayoutDestinationTransfers: components["schemas"]["PayoutDestinationTransferEntry"][];
+        PayoutDestinationTransfersV2: components["schemas"]["PayoutDestinationTransferEntryV2"][];
         Payment: {
             /** @description The payment product type corresponding to this transaction
              *      */
@@ -6595,7 +6595,7 @@ export interface components {
         /** @description A limit on the number of objects to be returned. Limit can range
          *     between 1 and 1000 items, and the default is 10 items.
          *      */
-        "limit-2": number;
+        limitV2: number;
         /** @description The page (as defined by the next_page_token in the api response) */
         page: string;
     };
@@ -8069,7 +8069,7 @@ export interface operations {
         /** @description Initiate fund transfer data */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["FundTransferCreateData"];
+                "application/json": components["schemas"]["FundTransferCreateDataV2"];
             };
         };
         responses: {
@@ -8080,7 +8080,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        fund_transfer?: components["schemas"]["FundTransfer"];
+                        fund_transfer?: components["schemas"]["FundTransferV2"];
                     };
                 };
             };
@@ -8112,7 +8112,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        payout_destination_balances?: components["schemas"]["PayoutDestinationBalances"];
+                        payout_destination_balances?: components["schemas"]["PayoutDestinationBalancesV2"];
                     };
                 };
             };
@@ -8128,7 +8128,7 @@ export interface operations {
                 /** @description A limit on the number of objects to be returned. Limit can range
                  *     between 1 and 1000 items, and the default is 10 items.
                  *      */
-                limit?: components["parameters"]["limit-2"];
+                limit?: components["parameters"]["limitV2"];
                 /** @description The page (as defined by the next_page_token in the api response) */
                 page?: components["parameters"]["page"];
                 /** @description Filter by currency */
@@ -8153,7 +8153,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        entries?: components["schemas"]["PayoutDestinationTransfers"];
+                        entries?: components["schemas"]["PayoutDestinationTransfersV2"];
                         next_page_token?: string;
                     };
                 };

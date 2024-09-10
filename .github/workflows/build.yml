@@ -15,4 +15,4 @@ jobs:
         with:
           node-version: "lts/*"
           cache: yarn
-      - run: make build test
+      - run: make build test convert-spec
