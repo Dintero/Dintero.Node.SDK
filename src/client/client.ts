@@ -4,6 +4,7 @@ import type { paths } from "../generated/payments";
 import {
     createAuthMiddleware,
     createVersionPrefixMiddleware,
+    extractAccountId,
 } from "./middleware";
 import type { ClientOptions } from "./types";
 
@@ -47,9 +48,10 @@ export const createClient = (options: ClientOptions) => {
 
     const checkout = createOpenApiFetchClient<CheckoutPaths>(config.checkout);
     const core = createOpenApiFetchClient<CorePaths>(config.core);
+    const accountId = extractAccountId(config.audience);
 
     core.use(versionPrefixMiddleware, authMiddleware);
     checkout.use(versionPrefixMiddleware, authMiddleware);
 
-    return { checkout, core };
+    return { checkout, core, accountId };
 };

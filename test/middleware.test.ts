@@ -2,6 +2,7 @@ import type { BodyType, MiddlewareCallbackParams } from "openapi-fetch";
 import {
     createAuthMiddleware,
     createVersionPrefixMiddleware,
+    extractAccountId,
     fetchAccessToken,
 } from "../src/client/middleware";
 
@@ -142,5 +143,40 @@ describe(createVersionPrefixMiddleware.name, () => {
         } else {
             fail("onRequest function is not defined in the middleware.");
         }
+    });
+});
+
+describe("extractAccountId", () => {
+    test("should extract account ID from the URL with username", () => {
+        const url = "https://T12345678@test.dintero.com/v1/accounts/T12345678";
+        const accountId = extractAccountId(url);
+        expect(accountId).toBe("T12345678");
+    });
+
+    test("should extract account ID from the URL path when username is absent", () => {
+        const url = "https://test.dintero.com/v1/accounts/T12345678";
+        const accountId = extractAccountId(url);
+        expect(accountId).toBe("T12345678");
+    });
+
+    test("should throw an error if account ID cannot be extracted", () => {
+        const url = "https://test.dintero.com/v1/accounts/";
+        expect(() => extractAccountId(url)).toThrow(
+            "Account ID could not be extracted from the audience URL.",
+        );
+    });
+
+    test("should throw an error if URL is malformed", () => {
+        const url = "not-a-valid-url";
+        expect(() => extractAccountId(url)).toThrow(
+            "Account ID could not be extracted from the audience URL.",
+        );
+    });
+
+    test("should handle URLs with multiple path segments correctly", () => {
+        const url =
+            "https://T12345678@test.dintero.com/v1/accounts/another-segment/T12345678";
+        const accountId = extractAccountId(url);
+        expect(accountId).toBe("T12345678");
     });
 });

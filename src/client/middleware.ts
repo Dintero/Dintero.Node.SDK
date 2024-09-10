@@ -1,11 +1,30 @@
 import type { Middleware } from "openapi-fetch";
 import type { ClientOptions } from "./types";
 
+export const extractAccountId = (audience: string): string => {
+    if (!audience || !audience.includes("://")) {
+        throw new Error(
+            "Account ID could not be extracted from the audience URL.",
+        );
+    }
+
+    const audienceUrl = new URL(audience);
+    const pathParts = audienceUrl.pathname.split("/").filter(Boolean);
+
+    const accountId =
+        audienceUrl.username || (pathParts.length >= 3 ? pathParts[2] : null);
+
+    if (!accountId) {
+        throw new Error(
+            "Account ID could not be extracted from the audience URL.",
+        );
+    }
+
+    return accountId;
+};
+
 export const fetchAccessToken = async (config: Required<ClientOptions>) => {
-    const audience = new URL(config.audience);
-
-    const accountId = audience.username as string;
-
+    const accountId = extractAccountId(config.audience);
     const url = `${config.core.baseUrl}/v1/accounts/${accountId}/auth/token`;
 
     const authToken = Buffer.from(

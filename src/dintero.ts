@@ -1,1 +1,2 @@
-export const something = () => 42;
+import { createClient } from "../src/client/client";
+export { createClient };

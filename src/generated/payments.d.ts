@@ -970,7 +970,7 @@ export interface components {
         BamboraTokenProvider: {
             payment_product_type: "BamboraTokenProvider";
         } & (Omit<components["schemas"]["TokenProvider"], "payment_product_type"> & {
-            token_types: ("payment_token" | "recurrence_token")[];
+            token_types: "payment_token"[];
         });
         /** @description Contains href URI to initiate a Click to Pay payment using Swedbank Pay (v3)
          *      */
@@ -3017,16 +3017,6 @@ export interface components {
                          *       generate the token.
                          *      */
                         payment_token?: string;
-                        /** @description Preload the store payment data related to the recurrence
-                         *     token and let the customer make a purchase without having
-                         *     to enter all card data
-                         *
-                         *     - The `bambora.creditcard` must be enabled in the session
-                         *       configuration to activate the use of provided payment token
-                         *     - Use the `bambora.creditcard.generate_recurrence_token` option to
-                         *       generate the token.
-                         *      */
-                        recurrence_token?: string;
                     };
                     "payex.creditcard"?: {
                         /** @description Preload the store payment data related to the payment
@@ -3121,15 +3111,6 @@ export interface components {
                  * @default false
                  */
                 generate_payment_token: boolean;
-                /**
-                 * @description generate recurrence payment token to use for future payments
-                 *
-                 *     The generated recurrence payment token will be made available from
-                 *     the transaction details.
-                 *
-                 * @default false
-                 */
-                generate_recurrence_token: boolean;
             };
             mobilepay?: {
                 /**
