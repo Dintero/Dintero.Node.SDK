@@ -68,7 +68,6 @@ describe("client.checkout", () => {
         );
 
         const client = createClient({
-            accountId: "ACCOUNTID",
             clientId: "CLIENTID",
             clientSecret: "CLIENTSECRET",
             audience:
@@ -114,7 +113,6 @@ describe("client.core", () => {
         );
 
         const client = createClient({
-            accountId: "ACCOUNTID",
             clientId: "CLIENTID",
             clientSecret: "CLIENTSECRET",
             audience:
