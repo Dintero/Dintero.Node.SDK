@@ -4,13 +4,16 @@ import yaml from "js-yaml";
 import type { OpenAPIV2 } from "openapi-types";
 import openapiTS, { astToString, type OpenAPI3 } from "openapi-typescript";
 import swagger2openapi from "swagger2openapi";
-import { request } from "undici";
 
 export async function generateTypes() {
     // Fetch the Swagger spec from the URL
     const url = "https://docs.dintero.com/specs/spec-payments.yaml";
-    const { body } = await request(url);
-    const yamlContent = await body.text();
+    console.log("convert-spec: GET", url);
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Unexpected response: ${response.status}`);
+    }
+    const yamlContent = await response.text();
 
     // Load the YAML spec
     const swaggerDoc = yaml.load(yamlContent) as OpenAPIV2.Document;
@@ -36,6 +39,7 @@ export async function generateTypes() {
     }
 
     // Write the generated types to a file
+    console.error("convert-spec: Write result to", outputPath);
     fs.writeFileSync(outputPath, typesString);
 }
 
