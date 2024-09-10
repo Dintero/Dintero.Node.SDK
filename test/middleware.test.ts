@@ -7,7 +7,6 @@ import {
 } from "../src/client/middleware";
 
 const config = {
-    accountId: "ACCOUNTID",
     clientId: "CLIENTID",
     clientSecret: "CLIENTSECRET",
     audience: "https://T12345678@test.dintero.com/v1/accounts/T12345678",

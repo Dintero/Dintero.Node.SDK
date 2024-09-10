@@ -25,7 +25,6 @@ export const extractAccountId = (audience: string): string => {
 
 export const fetchAccessToken = async (config: Required<ClientOptions>) => {
     const accountId = extractAccountId(config.audience);
-
     const url = `${config.core.baseUrl}/v1/accounts/${accountId}/auth/token`;
 
     const authToken = Buffer.from(
