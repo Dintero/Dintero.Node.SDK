@@ -1,0 +1,10 @@
+node_modules/
+scripts/
+test/
+src/
+makefile
+biome.json
+.renovaterc.json
+tsconfig.build.json
+tsconfig.json
+yarn.lock

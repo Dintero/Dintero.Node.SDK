@@ -54,7 +54,7 @@ const sessionProfileResponse = await client.checkout.POST('/sessions-profile', {
             return_url: 'https://example.com',  // Replace with actual return URL
         },
         order: {
-            amount: 1000,  
+            amount: 1000,
             currency: 'NOK',
             items: [
                 {
@@ -94,15 +94,16 @@ const client = createClient({
     audience: 'https://api.dintero.com/v1/accounts/your_account_id',
 });
 
- const settlementsResponse = await client.core.GET(`/accounts/${client.accountId}/settlements`, {
+const settlementsResponse = await client.core.GET(`/accounts/${client.accountId}/settlements`, {
     method: 'GET',
     headers: {
         'Accept': 'application/json',
         },
-    });
+    }
+);
 console.log('Settlements Response:', settlementsResponse.data);
-
 ```
+
 ## Bugs
 
 Bugs can be reported to https://github.com/Dintero/Dintero.Node.SDK/issues
