@@ -858,6 +858,13 @@
   dependencies:
     undici-types "~6.19.2"
 
+"@types/node@20.14.11":
+  version "20.14.11"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.14.11.tgz#09b300423343460455043ddd4d0ded6ac579b74b"
+  integrity sha512-kprQpL8MMeszbz6ojB5/tU8PLN4kesnN8Gjzw349rDlNgsSzg90lAVj3llK99Dh7JON+t9AuscPPFW6mPbTnSA==
+  dependencies:
+    undici-types "~5.26.4"
+
 "@types/stack-utils@^2.0.0":
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.3.tgz#6209321eb2c1712a7e7466422b8cb1fc0d9dd5d8"
@@ -2785,7 +2792,7 @@ ts-jest@29.2.5:
     semver "^7.6.3"
     yargs-parser "^21.1.1"
 
-ts-node@^10.9.2:
+ts-node@10.9.2:
   version "10.9.2"
   resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-10.9.2.tgz#70f021c9e185bccdca820e26dc413805c101c71f"
   integrity sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==
