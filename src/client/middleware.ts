@@ -24,7 +24,17 @@ export const extractAccountId = (audience: string): string => {
 };
 
 export const fetchAccessToken = async (config: Required<ClientOptions>) => {
-    const accountId = extractAccountId(config.audience);
+    const audienceUrl = new URL(config.audience);
+    const pathParts = audienceUrl.pathname.split("/").filter(Boolean);
+
+    const accountId = pathParts.length >= 3 ? pathParts[2] : null;
+
+    if (!accountId) {
+        throw new Error(
+            "Account ID could not be extracted from the audience URL.",
+        );
+    }
+
     const url = `${config.core.baseUrl}/v1/accounts/${accountId}/auth/token`;
 
     const authToken = Buffer.from(
