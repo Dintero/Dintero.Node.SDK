@@ -4,7 +4,7 @@ import {
     createVersionPrefixMiddleware,
     extractAccountId,
     fetchAccessToken,
-} from "../src/client/middleware";
+} from "../src/middleware";
 
 const config = {
     clientId: "CLIENTID",

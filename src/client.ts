@@ -1,6 +1,5 @@
-// client.ts
 import createOpenApiFetchClient from "openapi-fetch";
-import type { paths } from "../generated/payments";
+import type { paths } from "./generated/payments";
 import {
     createAuthMiddleware,
     createVersionPrefixMiddleware,
