@@ -9,16 +9,7 @@ updates:
       prefix-development: chore
       include: scope
     groups:
-      jest:
+      semantic-release:
         patterns:
-          - "@types/jest"
-          - "jest"
-          - "jest-junit"
-          - "ts-jest"
-      eslint:
-        patterns:
-          - "eslint"
-          - "eslint-*"
-          - "@typescript-eslint/eslint-plugin"
-          - "@typescript-eslint/parser"
-          - "@trivago/prettier-plugin-sort-imports"
+          - "@semantic-release/*"
+          - "semantic-release"

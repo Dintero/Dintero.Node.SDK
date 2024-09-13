@@ -1,11 +1,12 @@
 {
     "name": "@dintero/node-sdk",
-    "version": "0.0.1",
+    "version": "0.0.0-development",
     "description": "Node.js library for the Dintero API",
     "main": "./dist/dintero.js",
     "typings": "./dist/dintero.d.ts",
+    "files": ["dist"],
     "license": "MIT",
-    "private": true,
+    "private": false,
     "author": "Dintero <support@dintero.com> (https://dintero.com/)",
     "jest": {
         "preset": "ts-jest",
@@ -16,7 +17,9 @@
         "build-ts": "tsc -p ./tsconfig.build.json",
         "test": "jest",
         "lint": "biome check",
-        "convert-spec": "ts-node -T scripts/convert-spec.ts"
+        "convert-spec": "ts-node -T scripts/convert-spec.ts",
+        "semantic-release": "semantic-release",
+        "prepublishOnly": "yarn run build"
     },
     "devDependencies": {
         "@biomejs/biome": "1.8.3",
@@ -28,6 +31,7 @@
         "js-yaml": "4.1.0",
         "msw": "2.4.3",
         "openapi-typescript": "7.4.0",
+        "semantic-release": "24.1.1",
         "swagger2openapi": "7.0.8",
         "ts-jest": "29.2.5",
         "ts-node": "10.9.2",
@@ -37,6 +41,6 @@
         "node": ">=20.0.0"
     },
     "dependencies": {
-        "openapi-fetch": "0.12.0"
+        "openapi-fetch": "^0.12.0"
     }
 }
