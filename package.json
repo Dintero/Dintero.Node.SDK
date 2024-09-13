@@ -19,7 +19,7 @@
         "lint": "biome check",
         "convert-spec": "ts-node -T scripts/convert-spec.ts",
         "semantic-release": "semantic-release",
-        "prepublishOnly": "yarn run build"
+        "prepublishOnly": "yarn run build-ts"
     },
     "devDependencies": {
         "@biomejs/biome": "1.8.3",
