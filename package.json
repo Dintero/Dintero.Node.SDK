@@ -7,6 +7,9 @@
     "files": ["dist"],
     "license": "MIT",
     "private": false,
+    "publishConfig": {
+        "access": "public"
+    },
     "author": "Dintero <support@dintero.com> (https://dintero.com/)",
     "jest": {
         "preset": "ts-jest",
