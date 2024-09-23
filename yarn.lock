@@ -1034,18 +1034,18 @@
     require-from-string "^2.0.2"
     uri-js-replace "^1.0.1"
 
-"@redocly/config@^0.10.1":
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/@redocly/config/-/config-0.10.1.tgz#c7bcbab6cb3b82236c2f5c87aa44924a652d8e80"
-  integrity sha512-H3LnKVGzOaxskwJu8pmJYwBOWjP61qOK7TuTrbafqArDVckE06fhA6l0nO4KvBbjLPjy1Al7UnlxOu23V4Nl0w==
+"@redocly/config@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@redocly/config/-/config-0.11.0.tgz#e5a6c48768d9d2d8a9db618ee585ae1ec0b890cb"
+  integrity sha512-vAc77vCuWsVgLx2LN02P6jqLBhHuot6O1LsSJEAAkWEvXARSGSQVon50QW7jlbCMg9OFTYYYRPN4W6K/YmnM3w==
 
-"@redocly/openapi-core@^1.16.0":
-  version "1.24.0"
-  resolved "https://registry.yarnpkg.com/@redocly/openapi-core/-/openapi-core-1.24.0.tgz#0d234b62a81ebbba070a348b4654a60f878eb1a8"
-  integrity sha512-BFCwRTwkAHeYd8/IggOo0ZyseLJHzSTVGnVRaZCG0rcH3+d+N6qcjYIQRuNrjHlIFCsVFL7/ugLWFL5irODt7g==
+"@redocly/openapi-core@^1.25.3":
+  version "1.25.3"
+  resolved "https://registry.yarnpkg.com/@redocly/openapi-core/-/openapi-core-1.25.3.tgz#65bc901f310bd15845660ed57b78ecb76adf40df"
+  integrity sha512-dqJkyydgagW3FXX5cjtSUAnabsld4K6yq7RFgQ+ngI1m43PkEoSQt8pp+SfQDszSEoMbc7QKj8afbe7mZw17TA==
   dependencies:
     "@redocly/ajv" "^8.11.2"
-    "@redocly/config" "^0.10.1"
+    "@redocly/config" "^0.11.0"
     colorette "^1.2.0"
     https-proxy-agent "^7.0.4"
     js-levenshtein "^1.1.6"
@@ -4194,12 +4194,12 @@ openapi-typescript-helpers@^0.0.13:
   resolved "https://registry.yarnpkg.com/openapi-typescript-helpers/-/openapi-typescript-helpers-0.0.13.tgz#d959b6a87b5461759e240af375fab480252d2caf"
   integrity sha512-z44WK2e7ygW3aUtAtiurfEACohf/Qt9g6BsejmIYgEoY4REHeRzgFJmO3ium0libsuzPc145I+8lE9aiiZrQvQ==
 
-openapi-typescript@7.4.0:
-  version "7.4.0"
-  resolved "https://registry.yarnpkg.com/openapi-typescript/-/openapi-typescript-7.4.0.tgz#8d7b3de60466450fc1ac4f3f468f68c2a423fd53"
-  integrity sha512-u4iVuTGkzKG4rHFUMA/IFXTks9tYVQzkowZsScMOdzJSvIF10qSNySWHTwnN2fD+MEeWFAM8i1f3IUBlgS92eQ==
+openapi-typescript@7.4.1:
+  version "7.4.1"
+  resolved "https://registry.yarnpkg.com/openapi-typescript/-/openapi-typescript-7.4.1.tgz#1e42ecbd286ea62f6f8dc994b9aeccaa8b31c537"
+  integrity sha512-HrRoWveViADezHCNgQqZmPKmQ74q7nuH/yg9ursFucZaYQNUqsX38fE/V2sKBHVM+pws4tAHpuh/ext2UJ/AoQ==
   dependencies:
-    "@redocly/openapi-core" "^1.16.0"
+    "@redocly/openapi-core" "^1.25.3"
     ansi-colors "^4.1.3"
     change-case "^5.4.4"
     parse-json "^8.1.0"
