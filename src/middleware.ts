@@ -1,4 +1,5 @@
 import type { Client, Middleware } from "openapi-fetch";
+import { version } from "../package.json";
 import type { CorePaths } from "./types";
 import type { ClientOptions, TokenCache } from "./types";
 
@@ -101,6 +102,17 @@ export const createAuthMiddleware = (
         },
     };
 };
+
+export const createDefaultHeadersMiddleware = (): Middleware => ({
+    onRequest({ request }) {
+        if (!request.headers.get("User-Agent")) {
+            request.headers.set(
+                "User-Agent",
+                `Dintero.Node.SDK/${version} (+https://github.com/Dintero/Dintero.Node.SDK)`,
+            );
+        }
+    },
+});
 
 export const createVersionPrefixMiddleware = (): Middleware => ({
     async onRequest({ request, schemaPath }) {
