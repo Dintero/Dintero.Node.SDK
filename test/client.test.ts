@@ -18,6 +18,12 @@ beforeAll(() => {
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
+const options = {
+    clientId: "CLIENTID",
+    clientSecret: "CLIENTSECRET",
+    audience: "https://T12345678@test.dintero.com/v1/accounts/T12345678",
+};
+
 describe("client.checkout", () => {
     test("POST /sessions-profile", async () => {
         const rawData = { success: true };
@@ -67,14 +73,9 @@ describe("client.checkout", () => {
             ),
         );
 
-        const client = createClient({
-            clientId: "CLIENTID",
-            clientSecret: "CLIENTSECRET",
-            audience:
-                "https://T12345678@test.dintero.com/v1/accounts/T12345678",
-        });
+        const client = createClient(options);
 
-        const { data, error } = await client.checkout.POST(
+        const { data, error, response } = await client.checkout.POST(
             "/sessions-profile",
             {
                 body: requestBody,
@@ -83,10 +84,75 @@ describe("client.checkout", () => {
 
         expect(error).toBeUndefined();
         expect(data).toEqual(rawData);
+        expect(response.status).toEqual(200);
     });
 });
 
 describe("client.core", () => {
+    test("client auth error", async () => {
+        server.use(
+            http.post(
+                "https://api.dintero.com/v1/accounts/T12345678/auth/token",
+                () => {
+                    return HttpResponse.json(
+                        { error: { errors: [], message: "FORBIDDEN" } },
+                        { status: 403 },
+                    );
+                },
+            ),
+        );
+
+        const client = createClient(options);
+        expect(
+            client.core.GET("/accounts/{aid}/settlements", {
+                params: {
+                    path: { aid: "T12345678" },
+                    query: { limit: 1_000_000 },
+                },
+            }),
+        ).rejects.toThrow("Failed to fetch access token:");
+    });
+
+    test("client bad request", async () => {
+        server.use(
+            http.post(
+                "https://api.dintero.com/v1/accounts/T12345678/auth/token",
+                () => {
+                    return HttpResponse.json(
+                        {
+                            access_token: "eyJhbGci...t7P4",
+                            token_type: "Bearer",
+                            expires_in: 86400,
+                        },
+                        { status: 200 },
+                    );
+                },
+            ),
+            http.get(
+                "https://api.dintero.com/v1/accounts/T12345678/settlements",
+                () => {
+                    return HttpResponse.json(
+                        { error: { errors: [], message: "BAD_REQUEST" } },
+                        { status: 400 },
+                    );
+                },
+            ),
+        );
+
+        const client = createClient(options);
+        const { data, error } = await client.core.GET(
+            "/accounts/{aid}/settlements",
+            {
+                params: { path: { aid: "T12345678" } },
+            },
+        );
+
+        expect(error).toEqual({
+            error: { errors: [], message: "BAD_REQUEST" },
+        });
+        expect(data).toBeUndefined();
+    });
+
     test("GET /accounts/{aid}/settlements", async () => {
         const rawData = { test: { data: "foo" } };
 
@@ -112,21 +178,12 @@ describe("client.core", () => {
             ),
         );
 
-        const client = createClient({
-            clientId: "CLIENTID",
-            clientSecret: "CLIENTSECRET",
-            audience:
-                "https://T12345678@test.dintero.com/v1/accounts/T12345678",
-        });
+        const client = createClient(options);
 
         const { data, error } = await client.core.GET(
             "/accounts/{aid}/settlements",
             {
-                params: {
-                    path: {
-                        aid: "T12345678",
-                    },
-                },
+                params: { path: { aid: "T12345678" } },
             },
         );
 
