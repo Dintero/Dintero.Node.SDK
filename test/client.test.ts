@@ -21,7 +21,7 @@ afterAll(() => server.close());
 const options = {
     clientId: "CLIENTID",
     clientSecret: "CLIENTSECRET",
-    audience: "https://T12345678@test.dintero.com/v1/accounts/T12345678",
+    audience: "https://T12345678@api.dintero.com/v1/accounts/T12345678",
 };
 
 describe("client.checkout", () => {
@@ -107,7 +107,6 @@ describe("client.core", () => {
             client.core.GET("/accounts/{aid}/settlements", {
                 params: {
                     path: { aid: "T12345678" },
-                    query: { limit: 1_000_000 },
                 },
             }),
         ).rejects.toThrow("Failed to fetch access token:");
@@ -144,6 +143,7 @@ describe("client.core", () => {
             "/accounts/{aid}/settlements",
             {
                 params: { path: { aid: "T12345678" } },
+                query: { limit: 1_000_000 },
             },
         );
 

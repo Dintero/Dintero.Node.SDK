@@ -1,4 +1,5 @@
-import type { Middleware } from "openapi-fetch";
+import type { Client, Middleware } from "openapi-fetch";
+import type { CorePaths } from "./types";
 import type { ClientOptions } from "./types";
 
 export const extractAccountId = (audience: string): string => {
@@ -23,63 +24,52 @@ export const extractAccountId = (audience: string): string => {
     return accountId;
 };
 
-export const fetchAccessToken = async (config: Required<ClientOptions>) => {
-    const accountId = extractAccountId(config.audience);
-    const url = `${config.core.baseUrl}/v1/accounts/${accountId}/auth/token`;
-
-    const authToken = Buffer.from(
+export const accessToken = async (
+    config: Required<ClientOptions>,
+    client: Client<CorePaths>,
+) => {
+    const bearerToken = Buffer.from(
         `${config.clientId}:${config.clientSecret}`,
     ).toString("base64");
-
-    const response = await fetch(url, {
-        method: "POST",
+    return await client.POST("/accounts/{oid}/auth/token", {
+        params: { path: { oid: extractAccountId(config.audience) } },
         headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            Authorization: `Basic ${authToken}`,
+            Authorization: `Basic ${bearerToken}`,
         },
-        body: JSON.stringify({
+        body: {
             grant_type: "client_credentials",
             audience: config.audience,
-        }),
+        },
     });
-
-    const responseText = await response.text();
-
-    if (response.status !== 200) {
-        throw new Error(
-            `Failed to fetch access token: ${response.statusText}. Details: ${responseText}`,
-        );
-    }
-
-    const json = JSON.parse(responseText);
-
-    return {
-        accessToken: json.access_token,
-        expiresIn: json.expires_in,
-    };
 };
 
 export const createAuthMiddleware = (
     config: Required<ClientOptions>,
+    client: Client<CorePaths>,
 ): Middleware => {
-    let accessToken: string | undefined = undefined;
-    let tokenExpiry = 0;
+    let auth: { access_token: string; expires_in: number } | undefined =
+        undefined;
+    let authExpires = 0;
     return {
         async onRequest({ request }) {
             if (request.headers.get("Authorization")) {
-                return request;
+                return undefined;
             }
 
-            const currentTime = Math.floor(Date.now() / 1000);
+            const now = Math.floor(Date.now() / 1000);
 
-            if (!accessToken || tokenExpiry < currentTime) {
-                const tokenData = await fetchAccessToken(config);
-                accessToken = tokenData.accessToken;
-                tokenExpiry = currentTime + Math.floor(tokenData.expiresIn / 2);
+            if (!auth?.access_token || authExpires < now) {
+                const result = await accessToken(config, client);
+                if (result.error || !result.data) {
+                    throw new Error(
+                        `Failed to fetch access token: ${result.response.status}`,
+                    );
+                }
+                auth = result.data;
+                authExpires = now + Math.floor(auth.expires_in / 2);
             }
 
-            request.headers.set("Authorization", `Bearer ${accessToken}`);
+            request.headers.set("Authorization", `Bearer ${auth.access_token}`);
             return request;
         },
     };
