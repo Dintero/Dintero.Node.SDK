@@ -1,6 +1,7 @@
 import createOpenApiFetchClient from "openapi-fetch";
 import {
     createAuthMiddleware,
+    createDefaultHeadersMiddleware,
     createVersionPrefixMiddleware,
     extractAccountId,
 } from "./middleware";
@@ -18,10 +19,11 @@ export const createClient = (options: ClientOptions) => {
     const accountId = extractAccountId(config.audience);
 
     const authMiddleware = createAuthMiddleware(config, core);
+    const headersMiddleware = createDefaultHeadersMiddleware();
     const versionPrefixMiddleware = createVersionPrefixMiddleware();
 
-    core.use(versionPrefixMiddleware, authMiddleware);
-    checkout.use(versionPrefixMiddleware, authMiddleware);
+    core.use(versionPrefixMiddleware, authMiddleware, headersMiddleware);
+    checkout.use(versionPrefixMiddleware, authMiddleware, headersMiddleware);
 
     return { checkout, core, accountId };
 };
