@@ -1,6 +1,6 @@
 import type { Client, Middleware } from "openapi-fetch";
 import type { CorePaths } from "./types";
-import type { ClientOptions } from "./types";
+import type { ClientOptions, TokenCache } from "./types";
 
 export const extractAccountId = (audience: string): string => {
     if (!audience || !audience.includes("://")) {
@@ -43,33 +43,60 @@ export const accessToken = async (
     });
 };
 
+export const defaultTokenCache = (): TokenCache => {
+    let cached:
+        | { accessToken: string; expiresIn: number; aud: string }
+        | undefined = undefined;
+    return {
+        set: (aud, accessToken, expiresIn) => {
+            cached = {
+                aud,
+                accessToken,
+                expiresIn:
+                    Math.floor(Date.now() / 1000) + Math.floor(expiresIn / 2),
+            };
+            return Promise.resolve(cached);
+        },
+        get: (aud) => {
+            if (
+                cached?.aud === aud &&
+                Math.floor(Date.now() / 1000) < cached.expiresIn
+            ) {
+                return Promise.resolve({ accessToken: cached.accessToken });
+            }
+            return Promise.resolve(undefined);
+        },
+    };
+};
+
 export const createAuthMiddleware = (
-    config: Required<ClientOptions>,
+    options: Required<ClientOptions>,
     client: Client<CorePaths>,
 ): Middleware => {
-    let auth: { access_token: string; expires_in: number } | undefined =
-        undefined;
-    let authExpires = 0;
     return {
         async onRequest({ request }) {
             if (request.headers.get("Authorization")) {
                 return undefined;
             }
 
-            const now = Math.floor(Date.now() / 1000);
+            let auth = await options.tokenCache.get(options.audience);
 
-            if (!auth?.access_token || authExpires < now) {
-                const result = await accessToken(config, client);
+            if (!auth) {
+                const result = await accessToken(options, client);
                 if (result.error || !result.data) {
                     throw new Error(
                         `Failed to fetch access token: ${result.response.status}`,
                     );
                 }
-                auth = result.data;
-                authExpires = now + Math.floor(auth.expires_in / 2);
+
+                auth = await options.tokenCache.set(
+                    options.audience,
+                    result.data.access_token,
+                    result.data.expires_in,
+                );
             }
 
-            request.headers.set("Authorization", `Bearer ${auth.access_token}`);
+            request.headers.set("Authorization", `Bearer ${auth.accessToken}`);
             return request;
         },
     };

@@ -28,10 +28,20 @@ export type CorePaths = Pick<
     | "/v2/accounts/{aid}/payout/payout-destinations/{payout_destination_id}/transfers"
 >;
 
+export type TokenCache = {
+    get: (aud: string) => Promise<{ accessToken: string } | undefined>;
+    set: (
+        aud: string,
+        accessToken: string,
+        expiresIn: number,
+    ) => Promise<{ accessToken: string }>;
+};
+
 export type ClientOptions = {
     clientId: string;
     clientSecret: string;
     audience: string;
+    tokenCache?: TokenCache;
     core?: { baseUrl: string };
     checkout?: { baseUrl: string };
 };

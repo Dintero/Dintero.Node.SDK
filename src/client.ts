@@ -2,6 +2,7 @@ import createOpenApiFetchClient from "openapi-fetch";
 import {
     createAuthMiddleware,
     createVersionPrefixMiddleware,
+    defaultTokenCache,
     extractAccountId,
 } from "./middleware";
 import type { CheckoutPaths, ClientOptions, CorePaths } from "./types";
@@ -10,6 +11,7 @@ export const createClient = (options: ClientOptions) => {
     const config: Required<ClientOptions> = {
         checkout: { baseUrl: "https://checkout.dintero.com" },
         core: { baseUrl: "https://api.dintero.com" },
+        tokenCache: options.tokenCache ?? defaultTokenCache(),
         ...options,
     };
 

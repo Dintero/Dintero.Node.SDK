@@ -5,6 +5,7 @@ import createOpenApiFetchClient from "openapi-fetch";
 import {
     createAuthMiddleware,
     createVersionPrefixMiddleware,
+    defaultTokenCache,
     extractAccountId,
 } from "../src/middleware";
 import type { CorePaths } from "../src/types";
@@ -15,6 +16,7 @@ const config = {
     audience: "https://api.dintero.test/v1/accounts/T12345678",
     core: { baseUrl: "https://api.dintero.test" },
     checkout: { baseUrl: "https://checkout.dintero.test" },
+    tokenCache: defaultTokenCache(),
 };
 
 const server = setupServer();
@@ -177,5 +179,23 @@ describe("extractAccountId", () => {
             "https://T12345678@api.dintero.test/v1/accounts/another-segment/T12345678";
         const accountId = extractAccountId(url);
         expect(accountId).toBe("T12345678");
+    });
+});
+
+describe(defaultTokenCache.name, () => {
+    beforeEach(() => jest.useFakeTimers({}));
+    afterEach(() => jest.clearAllTimers());
+
+    test("cache expiry", async () => {
+        const tokenCacke = defaultTokenCache();
+
+        await tokenCacke.set("AUD", "SECRET", 8600);
+        expect(await tokenCacke.get("AUD")).toEqual({ accessToken: "SECRET" });
+
+        jest.advanceTimersByTime(5000);
+        expect(await tokenCacke.get("AUD")).toEqual({ accessToken: "SECRET" });
+
+        jest.advanceTimersByTime(100000);
+        expect(await tokenCacke.get("AUD")).toEqual({ accessToken: "SECRET" });
     });
 });

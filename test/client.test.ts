@@ -2,6 +2,7 @@ import { afterEach, beforeAll, describe, expect, test } from "@jest/globals";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { createClient } from "../src/client";
+import type { TokenCache } from "../src/types";
 
 const server = setupServer();
 
@@ -189,5 +190,82 @@ describe("client.core", () => {
 
         expect(error).toBeUndefined();
         expect(data).toEqual(rawData);
+    });
+});
+
+describe("client.tokenCache", () => {
+    test("use cached token", async () => {
+        server.use(
+            http.get(
+                "https://api.dintero.com/v1/accounts/T12345678/settlements",
+                () => {
+                    return HttpResponse.json({}, { status: 200 });
+                },
+            ),
+        );
+
+        const tokenCache = { set: jest.fn(), get: jest.fn() };
+        const client = createClient({
+            ...options,
+            tokenCache: tokenCache as unknown as TokenCache,
+        });
+
+        tokenCache.get.mockResolvedValue({ accessToken: "cached-token" });
+
+        const { error } = await client.core.GET("/accounts/{aid}/settlements", {
+            params: { path: { aid: "T12345678" } },
+        });
+
+        expect(error).toBeUndefined();
+        expect(tokenCache.get).toHaveBeenCalledWith(options.audience);
+        expect(tokenCache.set).not.toHaveBeenCalled();
+    });
+
+    test("no token in cache", async () => {
+        server.use(
+            http.post(
+                "https://api.dintero.com/v1/accounts/T12345678/auth/token",
+                () => {
+                    return HttpResponse.json(
+                        {
+                            access_token: "eyJhbGci...t7P4",
+                            token_type: "Bearer",
+                            expires_in: 86400,
+                        },
+                        { status: 200 },
+                    );
+                },
+            ),
+            http.get(
+                "https://api.dintero.com/v1/accounts/T12345678/settlements",
+                () => {
+                    return HttpResponse.json({}, { status: 200 });
+                },
+            ),
+        );
+
+        const tokenCache = {
+            set: jest.fn((a) => Promise.resolve(a)),
+            get: jest.fn(),
+        };
+
+        const client = createClient({
+            ...options,
+            tokenCache: tokenCache as unknown as TokenCache,
+        });
+
+        tokenCache.get.mockResolvedValue(undefined);
+
+        const { error } = await client.core.GET("/accounts/{aid}/settlements", {
+            params: { path: { aid: "T12345678" } },
+        });
+
+        expect(error).toBeUndefined();
+        expect(tokenCache.get).toHaveBeenCalledWith(options.audience);
+        expect(tokenCache.set).toHaveBeenCalledWith(
+            options.audience,
+            "eyJhbGci...t7P4",
+            86400,
+        );
     });
 });
