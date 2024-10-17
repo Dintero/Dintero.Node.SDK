@@ -27,9 +27,9 @@ You first need to create a client with the required credentials:
 import { createClient } from "@dintero/node-sdk";
 
 const client = createClient({
-    clientId: 'your_client_id',   // Replace with your actual client ID
-    clientSecret: 'your_client_secret',  // Replace with your actual client secret
-    audience: 'https://api.dintero.com/v1/accounts/your_account_id',
+    clientId: "your_client_id",   // Replace with your actual client ID
+    clientSecret: "your_client_secret",  // Replace with your actual client secret
+    audience: "https://api.dintero.com/v1/accounts/your_account_id",
 });
 
 export default client;
@@ -39,69 +39,71 @@ export default client;
 ### Example: Session Profile
 
 ```ts
-import { createClient } from '@dintero/node-sdk';
+import { createClient } from "@dintero/node-sdk";
 
 const client = createClient({
-    clientId: 'your_client_id',   // Replace with your actual client ID
-    clientSecret: 'your_client_secret',  // Replace with your actual client secret
-    audience: 'https://api.dintero.com/v1/accounts/your_account_id',
+    clientId: "your_client_id",   // Replace with your actual client ID
+    clientSecret: "your_client_secret",  // Replace with your actual client secret
+    audience: "https://api.dintero.com/v1/accounts/your_account_id",
 });
 
-const sessionProfileResponse = await client.checkout.POST('/sessions-profile', {
-    method: 'POST',
-    body: {
-        url: {
-            return_url: 'https://example.com',  // Replace with actual return URL
+const sessionProfileResponse = await client.checkout.POST(
+    "/sessions-profile",
+    {
+        body: {
+            url: {
+                return_url: "https://example.com",  // Replace with actual return URL
+            },
+            order: {
+                amount: 1000,
+                currency: "NOK",
+                items: [
+                    {
+                        id: "item1",
+                        line_id: "line1",
+                        description: "Item 1",
+                        amount: 1000,
+                        quantity: 1,
+                        vat_amount: 0,
+                        vat: 0,
+                        eligible_for_discount: false,
+                    },
+                ],
+                partial_payment: false,
+                merchant_reference: "ref123",  // Replace with actual merchant reference
+            },
+            profile_id: "default"
         },
-        order: {
-            amount: 1000,
-            currency: 'NOK',
-            items: [
-                {
-                    id: 'item1',
-                    line_id: 'line1',
-                    description: 'Item 1',
-                    amount: 1000,
-                    quantity: 1,
-                    vat_amount: 0,
-                    vat: 0,
-                    eligible_for_discount: false,
-                },
-            ],
-            partial_payment: false,
-            merchant_reference: 'ref123',  // Replace with actual merchant reference
-        },
-        profile_id: 'profile123',  // Replace with actual profile ID
     },
-    headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-    },
-});
+);
 
-console.log('Session Profile Response:', sessionProfileResponse.data);
+console.log("Session Profile Response:", sessionProfileResponse.data);
 ```
 
 ### Example: Fetching Settlement
 
 
 ```ts
-import { createClient } from '@dintero/node-sdk';
+import { createClient } from "@dintero/node-sdk";
 
 const client = createClient({
-    clientId: 'your_client_id',   // Replace with your actual client ID
-    clientSecret: 'your_client_secret',  // Replace with your actual client secret
-    audience: 'https://api.dintero.com/v1/accounts/your_account_id',
+    clientId: "your_client_id",   // Replace with your actual client ID
+    clientSecret: "your_client_secret",  // Replace with your actual client secret
+    audience: "https://api.dintero.com/v1/accounts/your_account_id",
 });
 
-const settlementsResponse = await client.core.GET(`/accounts/${client.accountId}/settlements`, {
-    method: 'GET',
-    headers: {
-        'Accept': 'application/json',
+const settlementsResponse = await client.core.GET(
+    "/accounts/{aid}/settlements",
+    {
+        params: {
+            path: {
+                aid: "T12345678",
+            },
         },
-    }
+    },
 );
-console.log('Settlements Response:', settlementsResponse.data);
+
+console.log("Settlements Response:", settlementsResponse.data);
 ```
 
 ## Bugs
