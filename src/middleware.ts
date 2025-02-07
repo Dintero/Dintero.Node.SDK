@@ -1,7 +1,9 @@
 import type { Client, Middleware } from "openapi-fetch";
-import { version } from "../package.json";
+
 import type { CorePaths } from "./types";
 import type { ClientOptions } from "./types";
+
+const pkg = require("../package.json");
 
 export const extractAccountId = (audience: string): string => {
     if (!audience || !audience.includes("://")) {
@@ -81,7 +83,7 @@ export const createDefaultHeadersMiddleware = (): Middleware => ({
         if (!request.headers.get("User-Agent")) {
             request.headers.set(
                 "User-Agent",
-                `Dintero.Node.SDK/${version} (+https://github.com/Dintero/Dintero.Node.SDK)`,
+                `Dintero.Node.SDK/${pkg.version} (+https://github.com/Dintero/Dintero.Node.SDK)`,
             );
         }
     },

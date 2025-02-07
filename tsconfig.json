@@ -9,7 +9,6 @@
         "strict": true,
         "baseUrl": "./",
         "types": ["jest", "node"],
-        "resolveJsonModule": true,
         "noUnusedLocals": true,
         "skipLibCheck": true,
         "noUncheckedIndexedAccess": true,
