@@ -34,7 +34,7 @@
         "js-yaml": "4.1.0",
         "msw": "2.7.0",
         "openapi-typescript": "7.6.1",
-        "semantic-release": "24.2.2",
+        "semantic-release": "24.2.3",
         "swagger2openapi": "7.0.8",
         "ts-jest": "29.2.5",
         "ts-node": "10.9.2",
