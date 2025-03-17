@@ -4186,9 +4186,9 @@ onetime@^6.0.0:
     mimic-fn "^4.0.0"
 
 openapi-fetch@^0.13.0:
-  version "0.13.4"
-  resolved "https://registry.yarnpkg.com/openapi-fetch/-/openapi-fetch-0.13.4.tgz#18ebee9c83855e143a65ad15e33204e200c9541e"
-  integrity sha512-JHX7UYjLEiHuQGCPxa3CCCIqe/nc4bTIF9c4UYVC8BegAbWoS3g4gJxKX5XcG7UtYQs2060kY6DH64KkvNZahg==
+  version "0.13.5"
+  resolved "https://registry.yarnpkg.com/openapi-fetch/-/openapi-fetch-0.13.5.tgz#805606860d85b8ba8c2e7cb36ea30b473d8065d9"
+  integrity sha512-AQK8T9GSKFREFlN1DBXTYsLjs7YV2tZcJ7zUWxbjMoQmj8dDSFRrzhLCbHPZWA1TMV3vACqfCxLEZcwf2wxV6Q==
   dependencies:
     openapi-typescript-helpers "^0.0.15"
 
