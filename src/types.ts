@@ -23,7 +23,7 @@ export type CorePaths = Pick<
     | "/accounts/{aid}/settlements/reports/configuration/{id}"
     | "/accounts/{aid}/management/settings/approvals/payout-destinations"
     | "/accounts/{aid}/settlements/{settlementid}/attachments/{attachmentid}"
-    | "/v2/accounts/{aid}/payout/fund-transfer"
+    | "/v2/accounts/{aid}/payout/fund-transfers"
     | "/v2/accounts/{aid}/payout/payout-destinations/{payout_destination_id}/balances"
     | "/v2/accounts/{aid}/payout/payout-destinations/{payout_destination_id}/transfers"
 >;

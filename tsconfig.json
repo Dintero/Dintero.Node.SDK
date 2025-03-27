@@ -12,6 +12,7 @@
         "noUnusedLocals": true,
         "skipLibCheck": true,
         "noUncheckedIndexedAccess": true,
+        "isolatedModules": true,
         "esModuleInterop": true
     },
     "include": ["src/**/*.ts", "src/test/**/*.ts"],
