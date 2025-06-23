@@ -4,7 +4,9 @@
     "description": "Node.js library for the Dintero API",
     "main": "./dist/dintero.js",
     "typings": "./dist/dintero.d.ts",
-    "files": ["dist"],
+    "files": [
+        "dist"
+    ],
     "license": "MIT",
     "private": false,
     "publishConfig": {
@@ -13,7 +15,9 @@
     "author": "Dintero <support@dintero.com> (https://dintero.com/)",
     "jest": {
         "preset": "ts-jest",
-        "testMatch": ["**/test/**/*.test.ts"]
+        "testMatch": [
+            "**/test/**/*.test.ts"
+        ]
     },
     "scripts": {
         "build": "yarn -s build-ts && yarn -s lint",
@@ -25,7 +29,7 @@
         "prepublishOnly": "yarn run build-ts"
     },
     "devDependencies": {
-        "@biomejs/biome": "1.9.4",
+        "@biomejs/biome": "2.0.5",
         "@types/jest": "30.0.0",
         "@types/js-yaml": "4.0.9",
         "@types/node": "24.0.3",

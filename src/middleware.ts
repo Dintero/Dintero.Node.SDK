@@ -1,7 +1,5 @@
 import type { Client, Middleware } from "openapi-fetch";
-
-import type { CorePaths } from "./types";
-import type { ClientOptions } from "./types";
+import type { ClientOptions, CorePaths } from "./types";
 
 const pkg = require("../package.json");
 
@@ -50,8 +48,7 @@ export const createAuthMiddleware = (
     config: Required<ClientOptions>,
     client: Client<CorePaths>,
 ): Middleware => {
-    let auth: { access_token: string; expires_in: number } | undefined =
-        undefined;
+    let auth: { access_token: string; expires_in: number } | undefined;
     let authExpires = 0;
     return {
         async onRequest({ request }) {

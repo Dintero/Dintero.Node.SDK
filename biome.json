@@ -1,15 +1,11 @@
 {
     "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-    "organizeImports": {
-        "enabled": true
-    },
     "files": {
-        "ignore": ["coverage/**", "dist/**", "generated/**"]
+        "includes": ["**", "!coverage/**", "!dist/**", "!**/generated/**"]
     },
     "formatter": {
         "enabled": true,
         "formatWithErrors": false,
-        "ignore": [],
         "attributePosition": "auto",
         "indentStyle": "space",
         "indentWidth": 4,
