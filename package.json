@@ -40,7 +40,7 @@
         "openapi-typescript": "7.9.1",
         "semantic-release": "24.2.8",
         "swagger2openapi": "7.0.8",
-        "ts-jest": "29.4.1",
+        "ts-jest": "29.4.4",
         "ts-node": "10.9.2",
         "typescript": "5.9.2"
     },
