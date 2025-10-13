@@ -29,7 +29,7 @@
         "prepublishOnly": "yarn run build-ts"
     },
     "devDependencies": {
-        "@biomejs/biome": "2.2.5",
+        "@biomejs/biome": "2.2.6",
         "@types/jest": "30.0.0",
         "@types/js-yaml": "4.0.9",
         "@types/node": "24.7.0",
