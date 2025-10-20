@@ -48,6 +48,6 @@
         "node": ">=20.0.0"
     },
     "dependencies": {
-        "openapi-fetch": "^0.14.0"
+        "openapi-fetch": "^0.15.0"
     }
 }
