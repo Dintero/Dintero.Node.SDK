@@ -13,6 +13,14 @@
         "access": "public"
     },
     "author": "Dintero <support@dintero.com> (https://dintero.com/)",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Dintero/Dintero.Node.SDK.git"
+    },
+    "homepage": "https://github.com/Dintero/Dintero.Node.SDK",
+    "bugs": {
+        "url": "https://github.com/Dintero/Dintero.Node.SDK/issues"
+    },
     "jest": {
         "preset": "ts-jest",
         "testMatch": [
