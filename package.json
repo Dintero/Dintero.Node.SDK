@@ -44,7 +44,7 @@
         "@types/swagger2openapi": "7.0.4",
         "jest": "30.2.0",
         "js-yaml": "4.1.0",
-        "msw": "2.11.2",
+        "msw": "2.11.6",
         "openapi-typescript": "7.9.1",
         "semantic-release": "25.0.1",
         "swagger2openapi": "7.0.8",
