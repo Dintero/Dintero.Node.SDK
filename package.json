@@ -54,7 +54,7 @@
         "@biomejs/biome": "2.3.11",
         "@types/jest": "30.0.0",
         "@types/js-yaml": "4.0.9",
-        "@types/node": "25.0.9",
+        "@types/node": "25.0.10",
         "@types/swagger2openapi": "7.0.4",
         "jest": "30.2.0",
         "js-yaml": "4.1.1",
