@@ -4,7 +4,7 @@ import type { ClientOptions, CorePaths } from "./types";
 const pkg = require("../package.json");
 
 export const extractAccountId = (audience: string): string => {
-    if (!audience || !audience.includes("://")) {
+    if (!audience?.includes("://")) {
         throw new Error(
             "Account ID could not be extracted from the audience URL.",
         );
