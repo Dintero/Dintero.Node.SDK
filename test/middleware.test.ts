@@ -1,6 +1,8 @@
+import assert from "node:assert";
+import { after, afterEach, before, describe, test } from "node:test";
 import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
-import type { BodyType, MiddlewareCallbackParams } from "openapi-fetch";
+import type { MiddlewareCallbackParams, ParseAs } from "openapi-fetch";
 import createOpenApiFetchClient from "openapi-fetch";
 import {
     createAuthMiddleware,
@@ -19,7 +21,7 @@ const config = {
 
 const server = setupServer();
 
-beforeAll(() => {
+before(() => {
     server.listen({
         onUnhandledRequest: (request) => {
             throw new Error(
@@ -30,7 +32,7 @@ beforeAll(() => {
 });
 
 afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+after(() => server.close());
 
 describe(createAuthMiddleware.name, () => {
     test("should set Authorization header", async () => {
@@ -63,9 +65,10 @@ describe(createAuthMiddleware.name, () => {
             options: {
                 baseUrl: "https://api.example.com",
                 parseAs: "json",
-                querySerializer: jest.fn(),
-                bodySerializer: jest.fn(),
-                fetch: jest.fn(),
+                querySerializer: () => "",
+                bodySerializer: () => "",
+                pathSerializer: (path: string) => path,
+                fetch: () => Promise.resolve(new Response()),
             },
             schemaPath: "/accounts/{aid}/settlements",
             params: {},
@@ -75,7 +78,8 @@ describe(createAuthMiddleware.name, () => {
 
         await authMiddleware.onRequest?.(mockParams);
 
-        expect(request.headers.get("Authorization")).toBe(
+        assert.strictEqual(
+            request.headers.get("Authorization"),
             "Bearer mock-access-token",
         );
     });
@@ -92,24 +96,26 @@ describe(createVersionPrefixMiddleware.name, () => {
             id: "test-id",
             options: {
                 baseUrl: "https://api.example.com",
-                parseAs: "json" as keyof BodyType<unknown>,
-                querySerializer: jest.fn(),
-                bodySerializer: jest.fn(),
-                fetch: jest.fn(),
+                parseAs: "json" as ParseAs,
+                querySerializer: () => "",
+                bodySerializer: () => "",
+                pathSerializer: (path: string) => path,
+                fetch: () => Promise.resolve(new Response()),
             },
             params: {},
         };
 
         if (middleware.onRequest) {
             const modifiedRequest = await middleware.onRequest(mockParams);
-            expect(modifiedRequest).toBeDefined();
+            assert.ok(modifiedRequest);
             if (modifiedRequest) {
-                expect(modifiedRequest.url).toBe(
+                assert.strictEqual(
+                    modifiedRequest.url,
                     "https://api.example.com/v1/test",
                 );
             }
         } else {
-            fail("onRequest function is not defined in the middleware.");
+            assert.fail("onRequest function is not defined in the middleware.");
         }
     });
 
@@ -123,24 +129,26 @@ describe(createVersionPrefixMiddleware.name, () => {
             id: "test-id",
             options: {
                 baseUrl: "https://api.example.com/v",
-                parseAs: "json" as keyof BodyType<unknown>,
-                querySerializer: jest.fn(),
-                bodySerializer: jest.fn(),
-                fetch: jest.fn(),
+                parseAs: "json" as ParseAs,
+                querySerializer: () => "",
+                bodySerializer: () => "",
+                pathSerializer: (path: string) => path,
+                fetch: () => Promise.resolve(new Response()),
             },
             params: {},
         };
 
         if (middleware.onRequest) {
             const modifiedRequest = await middleware.onRequest(mockParams);
-            expect(modifiedRequest).toBeDefined();
+            assert.ok(modifiedRequest);
             if (modifiedRequest) {
-                expect(modifiedRequest.url).toBe(
+                assert.strictEqual(
+                    modifiedRequest.url,
                     "https://api.example.com/v1/test",
                 );
             }
         } else {
-            fail("onRequest function is not defined in the middleware.");
+            assert.fail("onRequest function is not defined in the middleware.");
         }
     });
 });
@@ -149,33 +157,33 @@ describe("extractAccountId", () => {
     test("should extract account ID from the URL with username", () => {
         const url = "https://T12345678@api.dintero.test/v1/accounts/T12345678";
         const accountId = extractAccountId(url);
-        expect(accountId).toBe("T12345678");
+        assert.strictEqual(accountId, "T12345678");
     });
 
     test("should extract account ID from the URL path when username is absent", () => {
         const url = "https://api.dintero.test/v1/accounts/T12345678";
         const accountId = extractAccountId(url);
-        expect(accountId).toBe("T12345678");
+        assert.strictEqual(accountId, "T12345678");
     });
 
     test("should throw an error if account ID cannot be extracted", () => {
         const url = "https://api.dintero.test/v1/accounts/";
-        expect(() => extractAccountId(url)).toThrow(
-            "Account ID could not be extracted from the audience URL.",
-        );
+        assert.throws(() => extractAccountId(url), {
+            message: "Account ID could not be extracted from the audience URL.",
+        });
     });
 
     test("should throw an error if URL is malformed", () => {
         const url = "not-a-valid-url";
-        expect(() => extractAccountId(url)).toThrow(
-            "Account ID could not be extracted from the audience URL.",
-        );
+        assert.throws(() => extractAccountId(url), {
+            message: "Account ID could not be extracted from the audience URL.",
+        });
     });
 
     test("should handle URLs with multiple path segments correctly", () => {
         const url =
             "https://T12345678@api.dintero.test/v1/accounts/another-segment/T12345678";
         const accountId = extractAccountId(url);
-        expect(accountId).toBe("T12345678");
+        assert.strictEqual(accountId, "T12345678");
     });
 });

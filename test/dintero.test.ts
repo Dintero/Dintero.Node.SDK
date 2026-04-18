@@ -1,3 +1,5 @@
+import assert from "node:assert";
+import { describe, test } from "node:test";
 import * as dintero from "../src/dintero";
 
 describe("dintero", () => {
@@ -7,6 +9,6 @@ describe("dintero", () => {
             clientSecret: "testClientSecret",
             audience: "https://api.dintero.com/v1/accounts/testAccountId",
         });
-        expect(client).toBeDefined();
+        assert.ok(client);
     });
 });

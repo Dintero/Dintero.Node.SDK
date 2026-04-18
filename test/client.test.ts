@@ -1,10 +1,12 @@
+import assert from "node:assert";
+import { after, afterEach, before, describe, test } from "node:test";
 import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { createClient } from "../src/client";
 
 const server = setupServer();
 
-beforeAll(() => {
+before(() => {
     server.listen({
         onUnhandledRequest: (request) => {
             throw new Error(
@@ -15,7 +17,7 @@ beforeAll(() => {
 });
 
 afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+after(() => server.close());
 
 const options = {
     clientId: "CLIENTID",
@@ -81,9 +83,9 @@ describe("client.checkout", () => {
             },
         );
 
-        expect(error).toBeUndefined();
-        expect(data).toEqual(rawData);
-        expect(response.status).toEqual(200);
+        assert.strictEqual(error, undefined);
+        assert.deepStrictEqual(data, rawData);
+        assert.strictEqual(response.status, 200);
     });
 });
 
@@ -102,13 +104,14 @@ describe("client.core", () => {
         );
 
         const client = createClient(options);
-        expect(
+        await assert.rejects(
             client.core.GET("/accounts/{aid}/settlements", {
                 params: {
                     path: { aid: "T12345678" },
                 },
             }),
-        ).rejects.toThrow("Failed to fetch access token:");
+            /Failed to fetch access token:/,
+        );
     });
 
     test("client bad request", async () => {
@@ -146,10 +149,10 @@ describe("client.core", () => {
             },
         );
 
-        expect(error).toEqual({
+        assert.deepStrictEqual(error, {
             error: { errors: [], message: "BAD_REQUEST" },
         });
-        expect(data).toBeUndefined();
+        assert.strictEqual(data, undefined);
     });
 
     test("GET /accounts/{aid}/settlements", async () => {
@@ -186,7 +189,7 @@ describe("client.core", () => {
             },
         );
 
-        expect(error).toBeUndefined();
-        expect(data).toEqual(rawData);
+        assert.strictEqual(error, undefined);
+        assert.deepStrictEqual(data, rawData);
     });
 });
