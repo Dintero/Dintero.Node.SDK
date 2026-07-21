@@ -33,7 +33,7 @@
     "devDependencies": {
         "@biomejs/biome": "2.5.2",
         "@types/js-yaml": "4.0.9",
-        "@types/node": "25.9.4",
+        "@types/node": "26.0.0",
         "@types/swagger2openapi": "7.0.4",
         "js-yaml": "5.2.1",
         "msw": "2.14.6",
