@@ -7,13 +7,7 @@ import { createClient } from "../src/client";
 const server = setupServer();
 
 before(() => {
-    server.listen({
-        onUnhandledRequest: (request) => {
-            throw new Error(
-                `No request handler found for ${request.method} ${request.url}`,
-            );
-        },
-    });
+    server.listen({ onUnhandledFrame: "error" });
 });
 
 afterEach(() => server.resetHandlers());
