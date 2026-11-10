@@ -36,7 +36,7 @@
         "@types/node": "25.9.9",
         "@types/swagger2openapi": "7.0.4",
         "js-yaml": "5.5.0",
-        "msw": "3.0.2",
+        "msw": "3.0.3",
         "openapi-typescript": "7.13.0",
         "semantic-release": "25.0.9",
         "swagger2openapi": "7.0.8",
