@@ -31,7 +31,7 @@ export async function generateTypes() {
 
     // Define the output directory and file path
     const outputDir = path.join(path.resolve(), "src/generated");
-    const outputPath = path.join(outputDir, "payments.d.ts");
+    const outputPath = path.join(outputDir, "payments.ts");
 
     // Ensure the output directory exists
     if (!fs.existsSync(outputDir)) {

@@ -246,6 +246,13 @@ export interface paths {
          *     with `payment_product=instabank`. The items must include the
          *     lines to Refund, with `line_id`, `quantity` and `amount`.
          *
+         *     #### Refund `seitatech.in_person` transaction
+         *
+         *     `terminal_id` is required when refunding a `seitatech.in_person`
+         *     transaction. The cardholder must be present to approve the refund
+         *     on a terminal active on the same `payout_destination_id` as the
+         *     original transaction.
+         *
          *     scopes:
          *     - admin:checkout
          *     - write:checkout
@@ -549,7 +556,7 @@ export interface paths {
         };
         /**
          * Get payment logos image
-         * @description Endpoint that returns an svg that can be used to show the world your payment options. [Go to the documentation for the checkout branding endpoints.](/docs/checkout-branding)
+         * @description Endpoint that returns an svg that can be used to show the world your payment options. [Go to the documentation for the checkout branding endpoints.](/docs/checkout/display-payment-logos)
          */
         get: operations["branding_logoframe"];
         put?: never;
@@ -569,7 +576,7 @@ export interface paths {
         };
         /**
          * Get checkout profile image
-         * @description Endpoint that returns an svg that can be used to show the world your payment options. [Go to the documentation for the checkout branding endpoints.](/docs/checkout-branding)
+         * @description Endpoint that returns an svg that can be used to show the world your payment options. [Go to the documentation for the checkout branding endpoints.](/docs/checkout/display-payment-logos)
          */
         get: operations["branding_profile"];
         put?: never;
@@ -679,14 +686,16 @@ export interface paths {
          *     - write:accounts:/management/settings/approvals
          *
          *     ---
-         *       For testing purposes it is possible to auto-approve or decline a new seller
-         *       by adding one of the following values to `payout_destination_description`:
+         *       For testing purposes it is possible to auto-approve or decline a new seller by adding one of the following values to `payout_destination_description`:
          *
          *       - "AUTO_APPROVE": Approves the case automatically, the case status will be set to `ACTIVE`
          *       - "AUTO_DECLINE": Declines the case automatically, the case status will be set to `DECLINED`
          *       - "AUTO_WAITING_FOR_SIGNATURE": Leaves the signature check for the case, the case status will be set to `WAITING_FOR_SIGNATURE`
          *
          *     NOTE: This behavior is only available in test mode, i.e. with an `aid` prefixed with "T".
+         *
+         *     ---
+         *       Dintero admins (access tokens with the `admin:dintero` scope) can replace Dintero's standard terms for sellers with links to custom agreements by supplying `custom_agreements`. A case created with `custom_agreements` is always reviewed manually, it is never approved automatically.
          */
         post: operations["aid_management_settings_approvals_payout_destinations_post"];
         delete?: never;
@@ -890,7 +899,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get seller balances
+         * List seller balances
          * @description Get seller balance per currency
          */
         get: operations["v2_aid_payout_destination_balance_get"];
@@ -910,7 +919,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get seller transfers
+         * List seller transfers
          * @description Get list of transfers for a seller
          */
         get: operations["v2_aid_payout_destination_transfers_get"];
@@ -963,7 +972,7 @@ export interface components {
              * @description mobile number of a person / company, ITU/E.123 format with
              *     international prefix (+PPNNNNNNNNN...)
              */
-            phone_number: string;
+            phone_number?: string;
             /**
              * @description If true will either make the backend add or update a signed cookie with
              *     customer data. If false the cookie will be removed. If not set,
@@ -1049,6 +1058,12 @@ export interface components {
         });
         DinteroPspClickToPayPayTokenProvider: {
             payment_product_type: "DinteroPspClickToPayPayTokenProvider";
+        } & (Omit<components["schemas"]["TokenProvider"], "payment_product_type"> & {
+            token_types: "payment_token"[];
+            token_supported_auth_methods?: components["schemas"]["DinteroPspTokenAuthMethods"];
+        });
+        DinteroPspApplePayTokenProvider: {
+            payment_product_type: "DinteroPspApplePayTokenProvider";
         } & (Omit<components["schemas"]["TokenProvider"], "payment_product_type"> & {
             token_types: "payment_token"[];
             token_supported_auth_methods?: components["schemas"]["DinteroPspTokenAuthMethods"];
@@ -1248,7 +1263,7 @@ export interface components {
              * @description mobile number of a person / company, ITU/E.123 format with
              *     international prefix (+PPNNNNNNNNN...)
              */
-            phone_number: string;
+            phone_number?: string;
             /**
              * @description If true will either make the backend add or update a signed cookie with
              *     customer data. If false the cookie will be removed. If not set,
@@ -1266,6 +1281,16 @@ export interface components {
              * @example https://api.dintero.com/v1/accounts/P00000000
              */
             audience: string;
+        });
+        FundTransferPayoutDestinationParticipant: {
+            type: "FundTransferPayoutDestinationParticipant";
+        } & (Omit<components["schemas"]["FundTransferParticipant"], "type"> & {
+            /** @enum {string} */
+            type?: "payout-destination";
+            /** @example P12345678 */
+            account_id: string;
+            /** @example PPD-MX9421N */
+            payout_destination_id: string;
         });
         BamboraCreditcardCitPayment: {
             payment_product_type: "BamboraCreditcardCitPayment";
@@ -1386,7 +1411,7 @@ export interface components {
          *     > It is not possible to use `https://localhost` or `http://127.0.0.1` for
          *     > the callback URL as Checkout backend would then call itself.
          *
-         *     See [validating callbacks](https://docs.dintero.com/docs/validating-callbacks) to see how you can verify the integrity of the callbacks,
+         *     See [validating callbacks](https://docs.dintero.com/docs/checkout/validating-callbacks) to see how you can verify the integrity of the callbacks,
          * @example https://example.com/callback?method=GET
          */
         CallbackUrl: string;
@@ -1554,7 +1579,13 @@ export interface components {
             organization_number?: string;
             /** @description Type indicating what kind of organization it is. */
             organization_type?: string;
-            /** @description The customer's reference */
+            /**
+             * @description The customer's reference
+             *
+             *     #### Kravia
+             *     When Kravia is enabled, `billing_address.customer_reference` must
+             *     be at most 30 characters.
+             */
             customer_reference?: string;
             /** @description For companies that needs to specify a cost center. */
             cost_center?: string;
@@ -1564,11 +1595,17 @@ export interface components {
          *     the fees proportional with all splits destinations
          */
         PayoutFeeSplit: {
-            /** @enum {string} */
-            type: "proportional";
             /**
-             * @description Seller ids that will be debited for the payment fees
-             *     All destinations must be included in the list of splits
+             * @description - **`proportional`**: Fees are shared proportionally across `destinations`, weighted by each destination's split amount. Every destination must also be included in `splits`.
+             *     - **`equal_fee_only`**: Fees are shared equally across `destinations`. These destinations must not be included in `splits` and receive no income from the order - they only accumulate fee debt.
+             * @enum {string}
+             */
+            type: "proportional" | "equal_fee_only";
+            /**
+             * @description Seller ids that will be debited for the payment fees.
+             *
+             *     - When `type` is `proportional`, all destinations must also be included in the list of `splits`.
+             *     - When `type` is `equal_fee_only`, destinations must not be included in `splits`. The fee is divided equally between them, and they receive no income from the order - only fee debt.
              */
             destinations?: string[];
         };
@@ -2652,9 +2689,10 @@ export interface components {
              *     - **gift_card** - usage of a gift card, where the amount is usually a negative number
              *     - **shipping** - payment for shipping of the order
              *     - **surcharge** - extra incurred costs, like taxes or necessary rounding
+             *     - **tip** - a tip added to the order. The item's `splits` are calculated from `configuration.payout.tip_split`
              * @enum {string}
              */
-            type?: "physical" | "digital" | "service" | "gift_card" | "shipping" | "surcharge";
+            type?: "physical" | "digital" | "service" | "gift_card" | "shipping" | "surcharge" | "tip";
             fee_split?: components["schemas"]["PayoutFeeSplit"];
             /**
              * @description An array of objects specifying how the amount should be split between
@@ -3010,6 +3048,11 @@ export interface components {
             /**
              * @description A reference by the merchant to identify the corresponding
              *     order for the Checkout Session
+             *
+             *     #### Kravia
+             *     When Kravia is enabled and `merchant_reference_2` is set, it
+             *     takes precedence over `merchant_reference` as the Kravia case
+             *     reference and must be at most 35 characters.
              */
             merchant_reference_2?: string;
             /**
@@ -3029,7 +3072,7 @@ export interface components {
              */
             partial_payment: boolean;
             /**
-             * @description Details about the order items.
+             * @description Details about the order items. A maximum of 100 items are allowed. If providing items with `splits` - a maximum total of 200 `splits` are allowed in total across all items.
              *
              *     #### Instabank
              *     `required` if Instabank payment is configured in and partial_payment is false.
@@ -3101,6 +3144,7 @@ export interface components {
              *     authorized using gift cards
              */
             gift_cards?: components["schemas"]["Giftcard"][];
+            emd?: components["schemas"]["Emd"];
         };
         SessionOrder: WithRequired<components["schemas"]["SessionOrderUpdate"], "amount" | "currency"> & {
             /**
@@ -3113,6 +3157,11 @@ export interface components {
             /**
              * @description A reference by the merchant to identify the corresponding
              *     order for the Checkout Session
+             *
+             *     #### Kravia
+             *     When Kravia is enabled and `merchant_reference_2` is not set,
+             *     this value is used as the Kravia case reference and must be
+             *     at most 35 characters.
              */
             merchant_reference: string;
         };
@@ -3198,6 +3247,15 @@ export interface components {
                          */
                         payment_token?: string;
                     };
+                    "dintero_psp.applepay"?: {
+                        /**
+                         * @description Apple Pay payment token to use for a merchant initiated
+                         *     payment with `POST /v1/sessions/pay`
+                         *     - Use the `dintero_psp.applepay.generate_payment_token` option to
+                         *       generate the token.
+                         */
+                        payment_token?: string;
+                    };
                 };
             };
         };
@@ -3209,6 +3267,9 @@ export interface components {
              *     has been `CAPTURED`.
              *
              *     If `auto_capture` is not specified it defaults to `false`.
+             *
+             *     `auto_capture` is ignored for `seitatech.in_person` payments. They
+             *     are processed as a sale (authorized and captured in one step).
              *
              *     A successful auto-capture of a transaction sometimes requires more
              *     than one capture attempt. This can be the case if the payment gateway
@@ -3240,9 +3301,20 @@ export interface components {
         }[];
         /**
          * @description Determines if the payment_product_type is currently available for payment
+         *
+         *     `disabled_by_gateway`: The payment product type is disabled due to the payment gateway being unavailable.
+         *     `disabled_by_order_amount`: The payment product type is disabled due to the order amount being outside the allowed range.
+         *     `disabled_by_validation`: The payment product type is disabled due to validation errors.
          * @enum {string}
          */
-        SessionPayability: "payable" | "disabled_by_gateway" | "disabled_by_order_amount";
+        SessionPayability: "payable" | "disabled_by_gateway" | "disabled_by_order_amount" | "disabled_by_validation";
+        /** @description Reason for when `payability` is not `payable`, this field can describe why the payment product type is disabled. */
+        SessionPayabilityDisabledReasons: {
+            /** @description Code describing the reason for the payment product type payability in the session. */
+            code?: string;
+            /** @description Message describing the reason for the payment product type payability in the session. */
+            message?: string;
+        }[];
         /** @description Bambora configuration */
         BamboraConfiguration: {
             /**
@@ -3259,6 +3331,7 @@ export interface components {
                 /** @description Enable Apple Pay Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             creditcard?: {
                 /**
@@ -3269,6 +3342,7 @@ export interface components {
                 /** @description enable Credit Card Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /**
                  * @description generate payment token to use for future payments
                  *
@@ -3287,6 +3361,7 @@ export interface components {
                 /** @description Enable Google Pay Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             mobilepay?: {
                 /**
@@ -3297,6 +3372,7 @@ export interface components {
                 /** @description enable MobilePay Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             vipps?: {
                 /**
@@ -3307,6 +3383,7 @@ export interface components {
                 /** @description enable Vipps Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
         };
         /** @description Dintero configuration */
@@ -3322,9 +3399,11 @@ export interface components {
              *
              *     Please note that the following payment methods are not supported together
              *     with Dintero Wallets gift cards: `vipps`, `swish.swish`,
-             *     `klarna.billie`, `instabank`, `collector`, and `netaxept`.
+             *     `klarna.billie`, `collector`.
              *     Creating a session with Dintero Wallets and either of the abovementioned
              *     payment types enabled will result in an error.
+             *
+             *     For `kravia` and `two` payment is disabled if end customer adds a gift card in the checkout.
              */
             wallets?: {
                 /**
@@ -3335,6 +3414,7 @@ export interface components {
                 /** @description enable gift card */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             /**
              * @description Allow initiating pay on zero amount session, the payability will only
@@ -3351,6 +3431,7 @@ export interface components {
                 /** @description enable zero amount session */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             /** @description Allow initiating pay on an external payment method. */
             external?: {
@@ -3362,6 +3443,7 @@ export interface components {
                 /** @description enable external payment method */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /** @description Display configuration for the payment method */
                 display: {
                     /** @description Label to be shown in Checkout for the payment method */
@@ -3394,6 +3476,8 @@ export interface components {
                 };
             };
         };
+        /** @description Card brands available for this payment product. Read-only. */
+        DinteroPspCardBrandsWithMaestro: ("visa" | "mastercard" | "maestro")[];
         /**
          * @description Indicates which authentication methods to support during token authentication flows.
          *     The list order determines which method is preferred.
@@ -3443,6 +3527,8 @@ export interface components {
              */
             liability_rules?: components["schemas"]["SCARule"][];
         };
+        /** @description Card brands available for this payment product. Read-only. */
+        DinteroPspCardBrands: ("visa" | "mastercard")[];
         /** @description Dintero PSP configuration */
         DinteroPspConfiguration: {
             /**
@@ -3458,7 +3544,9 @@ export interface components {
                 type?: "payment_product_type";
                 /** @description enable creditcard */
                 enabled: boolean;
+                card_brands?: components["schemas"]["DinteroPspCardBrandsWithMaestro"];
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /**
                  * @description generate payment token to use for future payments
                  *
@@ -3494,6 +3582,7 @@ export interface components {
                 /** @description enable Vipps */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 sca_policy?: components["schemas"]["DinteroPaymentOptionSCAPolicy"];
             };
             applepay?: {
@@ -3504,7 +3593,17 @@ export interface components {
                 type?: "payment_product_type";
                 /** @description enable Apple Pay */
                 enabled: boolean;
+                card_brands?: components["schemas"]["DinteroPspCardBrandsWithMaestro"];
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
+                /**
+                 * @description generate payment token to use for future payments
+                 *
+                 *     The generated payment token will be made available from
+                 *     the transaction details.
+                 * @default false
+                 */
+                generate_payment_token: boolean;
                 sca_policy?: components["schemas"]["DinteroPaymentOptionSCAPolicy"];
                 details?: {
                     /** @description An array of domain names used for embedding the checkout with Apple Pay. The value is just the domain name, without the protocol, port or path. */
@@ -3525,7 +3624,10 @@ export interface components {
                 type?: "payment_product_type";
                 /** @description enable Google Pay */
                 enabled: boolean;
+                card_brands?: components["schemas"]["DinteroPspCardBrands"];
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
+                sca_policy?: components["schemas"]["DinteroPaymentOptionSCAPolicy"];
                 /**
                  * @description generate payment token to use for future payments
                  *
@@ -3543,7 +3645,9 @@ export interface components {
                 type?: "payment_product_type";
                 /** @description enable Visa Click-to-Pay */
                 enabled: boolean;
+                card_brands?: components["schemas"]["DinteroPspCardBrands"];
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /**
                  * @description generate payment token to use for future payments
                  *
@@ -3824,6 +3928,7 @@ export interface components {
                 /** @description enable finance payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 product?: unknown & components["schemas"]["InstabankFinanceProduct"];
             };
             /** @description invoice payment */
@@ -3831,6 +3936,7 @@ export interface components {
                 /** @description enable invoice payment (only for amounts greater than 500 NOK) */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 require_applicant?: boolean;
                 product?: unknown & components["schemas"]["InstabankInvoiceProduct"];
             };
@@ -3845,6 +3951,7 @@ export interface components {
                 /** @description enable Instabank Installment Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 readonly products?: components["schemas"]["InstabankInstallmentProduct"][];
             };
             /** @description Postpone payment */
@@ -3858,6 +3965,7 @@ export interface components {
                 /** @description enable Instabank Postponement Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 readonly products?: components["schemas"]["InstabankPostponementProduct"][];
             };
         };
@@ -3877,6 +3985,7 @@ export interface components {
                 /** @description enable Credit Card Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /**
                  * @description Use Netaxept terminal instead of Dintero Checkout
                  *
@@ -3900,11 +4009,13 @@ export interface components {
                 /** @description enable Payex Swish Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             creditcard?: {
                 /** @description enable Credit Card Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /**
                  * @description generate payment token to use for future payments
                  *
@@ -3931,11 +4042,13 @@ export interface components {
                 /** @description enable Payex MobilePay Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             vipps?: {
                 /** @description enable Payex Vipps Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             applepay?: {
                 /**
@@ -3946,6 +4059,7 @@ export interface components {
                 /** @description enable PayEx Apple Pay payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             clicktopay?: {
                 /**
@@ -3956,6 +4070,7 @@ export interface components {
                 /** @description enable PayEx Click to Pay payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             googlepay?: {
                 /**
@@ -3966,12 +4081,14 @@ export interface components {
                 /** @description enable PayEx Google Pay payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
         };
         VippsConfiguration: {
             /** @description enable vipps payment */
             enabled: boolean;
             payability?: components["schemas"]["SessionPayability"];
+            payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             /**
              * @description A short reference / descriptor that can be displayed to
              *     the end user
@@ -4060,6 +4177,7 @@ export interface components {
                     enable_on_hold?: boolean;
                 };
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             /** @description Invoice / Part Payment */
             invoice_b2b?: {
@@ -4070,6 +4188,7 @@ export interface components {
                  */
                 type: "payment_product_type";
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /** @description enable Collector Bank Invoice Payment B2B */
                 enabled: boolean;
                 countries?: string[];
@@ -4105,6 +4224,7 @@ export interface components {
                  */
                 type: "payment_product_type";
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /** @description enable Collector Bank Invoice Payment B2B */
                 enabled: boolean;
                 countries?: string[];
@@ -4126,6 +4246,7 @@ export interface components {
                 enabled: boolean;
                 countries?: string[];
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             /** @description Fixed Part Payment */
             installment?: {
@@ -4152,6 +4273,7 @@ export interface components {
                     enable_on_hold?: boolean;
                 };
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
         };
         /** @description Klarna configuration */
@@ -4170,6 +4292,7 @@ export interface components {
                 /** @description enable Klarna Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
             billie?: {
                 /**
@@ -4180,17 +4303,15 @@ export interface components {
                 /** @description enable Klarna B2B Payment with Billie */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
         };
         /**
-         * @description Configure how invoices are delivered to customers.
-         *
-         *      - `provider`: Dintero delivers the invoice to the customer
-         *      - `merchant`: Invoice PDF is available for the merchant to deliver
-         * @default provider
+         * @description Invoice channel to use for delivering  the invoice.
+         * @default kravia
          * @enum {string}
          */
-        InvoiceDeliveryMethod: "provider" | "merchant";
+        InvoiceChannel: "merchant" | "kravia";
         /** @description Kravia configuration */
         KraviaConfiguration: {
             /**
@@ -4207,9 +4328,11 @@ export interface components {
                 /** @description enable Kravia Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /**
                  * Format: date
-                 * @description The number of days until the invoice is due.
+                 * @description Default: `14`
+                 *     The number of days until the invoice is due. Use at least 3 days.
                  */
                 days_until_due?: number;
                 /**
@@ -4221,7 +4344,7 @@ export interface components {
                  * @default true
                  */
                 require_identity_verification: boolean;
-                invoice_delivery_method?: components["schemas"]["InvoiceDeliveryMethod"] & unknown;
+                invoice_channel?: components["schemas"]["InvoiceChannel"];
             };
             invoice_b2b_grouped?: {
                 /**
@@ -4232,6 +4355,7 @@ export interface components {
                 /** @description enable Kravia grouped invoices */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 invoice_schedule?: {
                     /**
                      * @description The interval at which the invoice should be issued. The invoice
@@ -4242,7 +4366,8 @@ export interface components {
                 };
                 /**
                  * Format: int32
-                 * @description The number of days until the invoice is due.
+                 * @description Default: `14`
+                 *     The number of days until the invoice is due. Use at least 3 days.
                  */
                 days_until_due?: number;
                 /**
@@ -4254,6 +4379,7 @@ export interface components {
                  * @default true
                  */
                 require_identity_verification: boolean;
+                invoice_channel?: components["schemas"]["InvoiceChannel"] & unknown;
             };
             invoice_b2c?: {
                 /**
@@ -4264,12 +4390,14 @@ export interface components {
                 /** @description enable Kravia B2C invoice */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /**
                  * Format: date
-                 * @description The number of days until the invoice is due.
+                 * @description Default: `14`
+                 *     The number of days until the invoice is due. Use at least 3 days.
                  */
                 days_until_due?: number;
-                invoice_delivery_method?: components["schemas"]["InvoiceDeliveryMethod"] & unknown;
+                invoice_channel?: components["schemas"]["InvoiceChannel"];
                 /**
                  * @description Whether identity verification is required, before allowing
                  *     payments.
@@ -4298,11 +4426,42 @@ export interface components {
                 /** @description enable Two Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /**
                  * @description The number of days until the invoice is due.
                  * @enum {integer}
                  */
                 duration_days?: 14 | 30;
+            };
+        };
+        /** @description Walley configuration */
+        WalleyConfiguration: {
+            /**
+             * @description Denotes what kind of config parameter this is
+             * @enum {string}
+             */
+            type?: "payment_type";
+            checkout_b2b?: {
+                /**
+                 * @description Denotes what kind of config parameter this is
+                 * @enum {string}
+                 */
+                type?: "payment_product_type";
+                /** @description Enable Walley Checkout for businesses */
+                enabled: boolean;
+                payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
+            };
+            checkout_b2c?: {
+                /**
+                 * @description Denotes what kind of config parameter this is
+                 * @enum {string}
+                 */
+                type?: "payment_product_type";
+                /** @description Enable Walley Checkout for consumers */
+                enabled: boolean;
+                payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
         };
         SantanderConfiguration: {
@@ -4320,6 +4479,7 @@ export interface components {
                 /** @description enable Santander Finance Debit Account */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /** @description The name of the chain */
                 branding_name?: string;
                 /** @description Debit accounts belonging to the customer's phone number */
@@ -4339,21 +4499,13 @@ export interface components {
              */
             type?: "payment_type";
             /**
-             * @description Enabling `in_person` via Seitatech requires `order.store.id`,
-             *     `order.store.terminal_id` and `order.store.payout_destination_id`
-             *     to be set. The terminal must be registered via the management API
-             *     with a store and payout destination.
+             * @description Enabling `in_person` via Seitatech requires `order.store.id`, `order.store.terminal_id` and `order.store.payout_destination_id` to be set. The terminal must be registered via the management API with a store and payout destination.
              *
-             *     When `seitatech.in_person` is the only enabled payment method, the
-             *     transaction will be automatically triggered on the terminal when
-             *     the session is created.
+             *     Add a `publish` configuration with `channel: push` and `type: terminal` to initiate the payment on the terminal. The payment is also initiated on the terminal without a `publish` configuration when `seitatech.in_person` is the only enabled payment type.
              *
-             *     If there are other payment options enabled in addition to seitatech.in_person,
-             *     the in-person payment must be initiated by performing a
-             *     [POST /v1/sessions/{session_id}/pay](/#operation/checkout_sid_pay_post)
+             *     Set `configuration.channel` to `in_store` on all in-person payments so the transaction is recorded as an in-store payment.
              *
-             *     Use callbacks and webhooks to receive notification when the in-person payment
-             *     is completed
+             *     Use callbacks and webhooks to receive notification when the in-person payment is completed.
              */
             in_person?: {
                 /**
@@ -4364,6 +4516,7 @@ export interface components {
                 /** @description enable in person payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
             };
         };
         /** @description Swish configuration */
@@ -4382,22 +4535,60 @@ export interface components {
                 /** @description enable Swish Payment */
                 enabled: boolean;
                 payability?: components["schemas"]["SessionPayability"];
+                payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                 /** @description Flag to check if Dintero handles payout for this payment product */
                 payout_enabled?: boolean;
             };
         };
-        /** @description Payout configuration */
+        /**
+         * @description Specify how tips are split between payout destinations.
+         *
+         *     When the payment method adds an order item with `type: tip`, e.g. payment terminal, the item's `splits` and `fee_split` are calculated from this configuration.
+         *
+         *     If not set, tips are split proportionally across the split destinations of the other order items, weighted by each destination's split amount.
+         * @example {
+         *       "destinations": [
+         *         {
+         *           "payout_destination_id": "seller-1",
+         *           "percentage": 70
+         *         },
+         *         {
+         *           "payout_destination_id": "seller-2",
+         *           "percentage": 30
+         *         }
+         *       ],
+         *       "fee_split": {
+         *         "type": "equal_fee_only",
+         *         "destinations": [
+         *           "seller-3"
+         *         ]
+         *       }
+         *     }
+         */
+        TipSplit: {
+            /** @description Payout destinations that will receive the tips along with the percentage split. The sum of all percentages must equal 100. */
+            destinations: {
+                /**
+                 * @description The payout destination id that will receive the tips.
+                 * @example seller-1
+                 */
+                payout_destination_id: string;
+                /**
+                 * @description The percentage of the tips that will be sent to the payout destination.
+                 * @example 70
+                 */
+                percentage: number;
+            }[];
+            fee_split?: components["schemas"]["PayoutFeeSplit"];
+        };
+        /** @description Configure how the payout is handled for the order. */
         PayoutConfiguration: {
             /**
-             * @description Use the order store id to control what `payout_destination_id` should
-             *     be use
+             * @description Use the order store id to control what `payout_destination_id` should be used
              *
-             *     A session created with the option set must have a store id that resolves
-             *     to a payout_destination_id or have payout_destination_id set
+             *     A session created with the option set must have a store id that resolves to a payout_destination_id or have payout_destination_id set
              *
-             *     A session where both `order.store.id` and `order.payout_destination_id`
-             *     will not be updated with match from `dynamic_payout_destination` if
-             *     `overwrite_payout_destination_id` is not set to `true`
+             *     A session where both `order.store.id` and `order.payout_destination_id` will not be updated with match from `dynamic_payout_destination` if `overwrite_payout_destination_id` is not set to `true`
              *
              *     - **`order_store_id`**: May specific store id to specifc payout destination id
              *     - **`order_store_id_as_order_payout_destination_id`**: Use store id as payout destination id
@@ -4423,14 +4614,28 @@ export interface components {
                  */
                 overwrite_payout_destination_id: boolean;
             }[];
+            tip_split?: components["schemas"]["TipSplit"];
             /** @description The payment products where payout is enabled */
             readonly payment_products?: {
                 /**
                  * @description Payment product
                  * @enum {string}
                  */
-                payment_product: "bambora" | "collector" | "payex" | "klarna" | "swish" | "dintero_psp" | "kravia";
+                payment_product: "bambora" | "collector" | "payex" | "klarna" | "swish" | "dintero_psp" | "kravia" | "seitatech";
             }[];
+        };
+        /**
+         * @description Configure age verification for a given payment session. When enabled, the
+         *     customer must complete age verification before completing checkout.
+         */
+        AgeVerificationConfiguration: {
+            /** @description Use this flag to enable or disable age verification for a given payment session. */
+            enabled: boolean;
+            /**
+             * @description The minimum age required to complete the payment session.
+             * @example 18
+             */
+            minimum_age_required: number;
         };
         PaymentConfiguration: components["schemas"]["AutoCaptureConfiguration"] & {
             /**
@@ -4438,42 +4643,79 @@ export interface components {
              *
              *     The majority of web integrations will not need to set this property.
              *
-             *     ### in_app
+             *     **`ecommerce`**
+             *
+             *     The default channel (also used if channel is not specified). The
+             *     url in the session created response body opens the Dintero Checkout
+             *     page.
+             *
+             *     **`in_app`**
              *
              *     The `in_app` channel is intended for payments done from
              *     mobile devices where `url.return_url` can be set to the
              *     application's appswitch URL.
-             *
-             *     #### Session deeplink URL
              *
              *     Creating a session with `channel=in_app` will return an
              *     appswitch deeplink URL if the enabled payment options in
              *     the session supports it
              *
              *     Appswitch deeplink is currently only supported for sessions
-             *     that has only Vipps enabled via Dintero PSP, Vipps or Swedbank (payex),
-             *     Mobilepay enable via Swedbank (payex) or Swish
+             *     that has only Vipps enabled via Dintero PSP, Vipps, Worldline
+             *     (bambora) or Swedbank (payex), MobilePay enabled via
+             *     Woldline (bambora) or Swedbank (payex) or Swish
              *
              *       - configuration.vipps.enabled
              *       - configuration.payex.vipps.enabled
              *       - configuration.payex.mobilepay.enabled
              *       - configuration.dintero_psp.vipps.enabled
+             *       - configuration.bambora.vipps.enabled
              *       - configuration.swish.swish.enabled
              *
              *     > `in_app` is currently not supported when express is enabled
              *     > `in_app` with deeplink URL is not supported if `publish` is enabled
              *
-             *     ### in_store
+             *     **`in_store`**
              *
-             *     The `in_store` channel is intended for payments done
-             *     in physical stores.
+             *     For payments where the customer is present in a physical store.
+             *     The channel is stored on the transaction, and affects:
              *
-             *     Depending on the payment_type, choosing `in_store` will
-             *     change the behaviour of the payment.
+             *       - **Klarna**: sent with `acquiring_channel=in_store` and the
+             *         `order.store` details as in-store payment data.
+             *       - **Walley (`collector`)**: fraud analysis disabled, and the
+             *         invoice is auto-activated when `auto_capture` is enabled.
+             *       - **In-person (`seitatech.in_person`)**: set it to mark
+             *         the transaction as in-store.
+             *
+             *     Other payment types ignore the channel.
+             *
+             *     **`hosted`**
+             *
+             *     The `hosted` channel will skip the Dintero Checkout page and the
+             *     returned `url` takes the end user directly to the payment service's
+             *     payment page, if the enabled payment options in the session support it.
+             *
+             *     If the url to the hosted page is a universal link then visiting the
+             *     url can launch an app if the device used supports universal links
+             *     and the payment app is installed on the device. The Vipps and
+             *     MobilePay hosted page acts as a universal link.
+             *
+             *     The `hosted` channel is currently only supported for sessions that
+             *     have a single payment method enabled and the payment method is one of the
+             *     following:
+             *       - configuration.vipps.enabled
+             *       - configuration.payex.vipps.enabled
+             *       - configuration.payex.mobilepay.enabled
+             *       - configuration.dintero_psp.vipps.enabled
+             *       - configuration.bambora.vipps.enabled
+             *
+             *     If the session contains more than one enabled payment method, or the
+             *     payment method does not support the `hosted` channel, the setting is
+             *     ignored and the `url` will open the Dintero Checkout (the default
+             *     `ecommerce` behaviour).
              * @default ecommerce
              * @enum {string}
              */
-            channel: "ecommerce" | "in_app" | "in_store";
+            channel: "ecommerce" | "in_app" | "in_store" | "hosted";
             publish?: components["schemas"]["PublishConfiguration"];
             active_payment_types?: {
                 /**
@@ -4487,7 +4729,7 @@ export interface components {
              *     loading the checkout window. The value must be an enabled payment type.
              * @enum {string}
              */
-            default_payment_type?: "bambora.applepay" | "bambora.creditcard" | "bambora.googlepay" | "bambora.mobilepay" | "bambora.vipps" | "dintero.zero" | "dintero_psp.applepay" | "dintero_psp.creditcard" | "dintero_psp.vipps" | "dintero_psp.googlepay" | "dintero_psp.clicktopay" | "instabank.finance" | "instabank.invoice" | "instabank.installment" | "instabank.postponement" | "vipps" | "payex.creditcard" | "payex.mobilepay" | "payex.swish" | "payex.vipps" | "payex.applepay" | "payex.clicktopay" | "payex.googlepay" | "collector.finance" | "collector.invoice" | "collector.invoice_b2b" | "collector.invoice_b2b_preapproved" | "collector.installment_b2b_preapproved" | "collector.installment" | "santander.debit_account" | "swish.swish" | "netaxept.creditcard" | "klarna.klarna" | "klarna.billie" | "kravia.invoice_b2b" | "kravia.invoice_b2b_grouped" | "kravia.invoice_b2c" | "seitatech.in_person" | "two.invoice_b2b";
+            default_payment_type?: "bambora.applepay" | "bambora.creditcard" | "bambora.googlepay" | "bambora.mobilepay" | "bambora.vipps" | "dintero.zero" | "dintero_psp.applepay" | "dintero_psp.creditcard" | "dintero_psp.vipps" | "dintero_psp.googlepay" | "dintero_psp.clicktopay" | "instabank.finance" | "instabank.invoice" | "instabank.installment" | "instabank.postponement" | "vipps" | "payex.creditcard" | "payex.mobilepay" | "payex.swish" | "payex.vipps" | "payex.applepay" | "payex.clicktopay" | "payex.googlepay" | "collector.finance" | "collector.invoice" | "collector.invoice_b2b" | "collector.invoice_b2b_preapproved" | "collector.installment_b2b_preapproved" | "collector.installment" | "santander.debit_account" | "swish.swish" | "netaxept.creditcard" | "klarna.klarna" | "klarna.billie" | "kravia.invoice_b2b" | "kravia.invoice_b2b_grouped" | "kravia.invoice_b2c" | "seitatech.in_person" | "two.invoice_b2b" | "walley.checkout_b2b" | "walley.checkout_b2c";
             bambora?: components["schemas"]["BamboraConfiguration"];
             dintero?: components["schemas"]["DinteroConfiguration"];
             dintero_psp?: components["schemas"]["DinteroPspConfiguration"];
@@ -4499,6 +4741,7 @@ export interface components {
             klarna?: components["schemas"]["KlarnaConfiguration"];
             kravia?: components["schemas"]["KraviaConfiguration"];
             two?: components["schemas"]["TwoConfiguration"];
+            walley?: components["schemas"]["WalleyConfiguration"];
             santander?: components["schemas"]["SantanderConfiguration"];
             seitatech?: components["schemas"]["SeitatechConfiguration"];
             swish?: components["schemas"]["SwishConfiguration"];
@@ -4511,6 +4754,7 @@ export interface components {
              * @example false
              */
             allow_express_wallet_payment: boolean;
+            age_verification?: components["schemas"]["AgeVerificationConfiguration"];
         };
         DiscountsConfiguration: {
             /** @description Configuration for discounts calculations */
@@ -4519,6 +4763,7 @@ export interface components {
                 readonly type?: "discounts";
                 express_discount_codes?: {
                     payability?: components["schemas"]["SessionPayability"];
+                    payability_disabled_reasons?: components["schemas"]["SessionPayabilityDisabledReasons"];
                     /**
                      * @description The discounts will be given by the configured express callback url.
                      *
@@ -4625,25 +4870,16 @@ export interface components {
          * @description Configure merchant information used in the
          *     checkout.
          */
-        Merchant: {
-            name: string;
-            /** Format: uri */
-            logo_url: string;
-            website?: string;
-            email?: string;
-            phone_number?: string;
-            merchant_category_code?: string;
+        SessionMerchant: {
             /**
-             * @description Type of platform the merchant is.
-             * @enum {string}
+             * @description The payout destination id of the merchant of record,
+             *     i.e. the seller responsible for the transaction.
+             * @example seller-1
              */
-            platform_type?: "aggregator" | "marketplace";
-            /** Format: iso3166-alpha2 */
-            country?: string;
-            postal_code?: string;
-            postal_place?: string;
-            address_line?: string;
-            address_line_2?: string;
+            payout_destination_id?: string;
+            name?: string;
+            /** Format: uri */
+            logo_url?: string;
         };
         SessionExpressUpdate: {
             /**
@@ -4754,7 +4990,7 @@ export interface components {
             configuration?: components["schemas"]["PaymentConfiguration"] & components["schemas"]["DiscountsConfiguration"] & components["schemas"]["SessionThemeConfiguration"] & components["schemas"]["CountryConfiguration"] & components["schemas"]["DefaultCustomerTypeConfiguration"] & components["schemas"]["AllowDifferentBillingShippingAddressConfiguration"];
             /** @description configuration profile */
             profile_id: string;
-            merchant?: components["schemas"]["Merchant"];
+            merchant?: components["schemas"]["SessionMerchant"];
         } & components["schemas"]["SessionExpress"] & {
             express?: {
                 shipping_options?: components["schemas"]["MultiShipmentShippingOption"][];
@@ -4977,6 +5213,44 @@ export interface components {
                 url: string;
             };
         };
+        /** @description Verified identity of the customer aka payer */
+        VerifiedIdentity: {
+            /** @enum {string} */
+            type: "collector-idp" | "dintero-idp";
+            /**
+             * Format: uri
+             * @example https://idp-uat.collectorbank.se
+             */
+            iss: string;
+            sub?: string;
+            aud: string;
+            /**
+             * Format: uri
+             * @description Authentication Context Class Reference.
+             * @example urn:collectorbank:ac:method:nbid
+             */
+            acr: string;
+            /** Format: date-time */
+            auth_time: string;
+            national_idp: string;
+            /**
+             * Format: iso3166-alpha2
+             * @example NO
+             */
+            national_country: string;
+            nonce?: string;
+            /** @example John Doe */
+            name?: string;
+            /** @example John */
+            given_name?: string;
+            /** @example Doe */
+            family_name?: string;
+            /**
+             * @description Verified age threshold.
+             * @example 18
+             */
+            age_over?: number;
+        };
         SessionMeta: {
             /** @description The ID of the Checkout */
             id?: string;
@@ -5019,6 +5293,24 @@ export interface components {
              *         "request_id": "b97b6312-f8b3-11ed-be56-0242ac120002"
              *       },
              *       {
+             *         "id": "2189ecac-6ae6-4e84-8a23-31402830b996",
+             *         "name": "AGE_VERIFICATION_COMPLETED",
+             *         "created_at": "2019-05-09T09:14:10.306Z",
+             *         "request_id": "b97b6312-f8b3-11ed-be56-0242ac120002",
+             *         "details": {
+             *           "verified_identity": {
+             *             "type": "dintero-idp",
+             *             "iss": "https://age-verification-test.criipto.id",
+             *             "aud": "checkout-client-id",
+             *             "acr": "urn:age-verification",
+             *             "auth_time": "2019-05-09T09:14:10.306Z",
+             *             "national_idp": "no_bankid",
+             *             "national_country": "NO",
+             *             "age_over": 18
+             *           }
+             *         }
+             *       },
+             *       {
              *         "name": "VISITED",
              *         "created_at": "2019-05-09T09:13:50.548Z"
              *       },
@@ -5042,7 +5334,7 @@ export interface components {
                 id?: string;
                 request_id?: string;
                 /** @enum {string} */
-                name?: "INITIATED" | "VISITED" | "COMPLETED" | "AUTHORIZED" | "DECLINED" | "PAY_LOCK_START" | "PAY_LOCK_META" | "PAY_LOCK_END" | "PAY_FAILED" | "ON_HOLD_CALLBACK_SENT" | "AUTH_CALLBACK_SENT" | "FAILED" | "UNKNOWN" | "PAYMENT_TOKEN_FLOW_START" | "UPDATE_SESSION" | "CANCELLED" | "SET_BILLING_ADDRESS" | "SET_DISCOUNT_CODES" | "SET_SHIPPING_ADDRESS" | "SET_SHIPPING_OPTION" | "SET_GIFT_CARD" | "PUSH_NOTIFICATION_SENT" | "SECRET_CONFIRMATION_CODE_SENT" | "SET_MY_DINTERO" | "ADD_PAYMENT_INFORMATION";
+                name?: "INITIATED" | "VISITED" | "COMPLETED" | "AUTHORIZED" | "DECLINED" | "PAY_LOCK_START" | "PAY_LOCK_META" | "PAY_LOCK_END" | "PAY_FAILED" | "ON_HOLD_CALLBACK_SENT" | "AUTH_CALLBACK_SENT" | "FAILED" | "UNKNOWN" | "PAYMENT_TOKEN_FLOW_START" | "UPDATE_SESSION" | "CANCELLED" | "SET_BILLING_ADDRESS" | "SET_DISCOUNT_CODES" | "SET_SHIPPING_ADDRESS" | "SET_SHIPPING_OPTION" | "SET_GIFT_CARD" | "PUSH_NOTIFICATION_SENT" | "SECRET_CONFIRMATION_CODE_SENT" | "SET_MY_DINTERO" | "ADD_PAYMENT_INFORMATION" | "AGE_VERIFICATION_COMPLETED";
                 request_headers?: components["schemas"]["RequestHeaders"];
                 details?: {
                     error?: string;
@@ -5059,6 +5351,9 @@ export interface components {
                         client_token: string;
                         session_id: string;
                     };
+                    "seitatech:payment_reference"?: string;
+                    "seitatech:terminal_id"?: string;
+                    "seitatech:terminal_tms_id"?: string;
                     "payex:payment:id"?: string;
                     "vipps:payment:id"?: string;
                     "vipps:gateway_api_version"?: string;
@@ -5099,12 +5394,42 @@ export interface components {
                      *     `AUTH_CALLBACK_SENT` event
                      */
                     transaction_event_id?: string;
+                    verified_identity?: components["schemas"]["VerifiedIdentity"];
                 };
             }[];
             /** @description Transaction which has been created using the checkout. */
             transaction_id?: string;
         };
         Session: components["schemas"]["SessionOptions"] & components["schemas"]["SessionMeta"];
+        /**
+         * @description Type of platform for merchants using split payout.
+         *
+         *     - `marketplace`: Sells products from many sellers under its own brand. The marketplace is the merchant of record.
+         *     - `platform`: Provides a platform that merchants use to sell under their own names. Each merchant is the merchant of record for its own sales.
+         *     - `reimburser`: Reimburses its employees for purchases made on behalf of the company.
+         * @enum {string}
+         */
+        PlatformType: "marketplace" | "platform" | "reimburser";
+        /**
+         * @description Configure merchant information used in the
+         *     checkout.
+         */
+        Merchant: {
+            name: string;
+            /** Format: uri */
+            logo_url: string;
+            website?: string;
+            email?: string;
+            phone_number?: string;
+            merchant_category_code?: string;
+            platform_type?: components["schemas"]["PlatformType"];
+            /** Format: iso3166-alpha2 */
+            country?: string;
+            postal_code?: string;
+            postal_place?: string;
+            address_line?: string;
+            address_line_2?: string;
+        };
         SessionRead: {
             order?: {
                 /**
@@ -5163,15 +5488,8 @@ export interface components {
                 "session:profile_id"?: string;
             };
             configuration?: {
-                merchant?: {
-                    /** @example null */
+                merchant?: components["schemas"]["Merchant"] & {
                     id?: string;
-                    /** Format: uri */
-                    logo_url?: string;
-                    /** @example TKP tech AS */
-                    name?: string;
-                    /** @example NO */
-                    country?: string;
                 };
             };
         };
@@ -5294,6 +5612,17 @@ export interface components {
          * @enum {string}
          */
         SettlementStatus: "NOT_SETTLED" | "PENDING_SETTLEMENT" | "PARTIALLY_SETTLED" | "SETTLED";
+        /** @description The merchant of record for the transaction. */
+        TransactionMerchant: {
+            /**
+             * @description The payout destination id of the merchant of record,
+             *     i.e. the seller responsible for the transaction.
+             *
+             *     Available when merchant of record is set on the session object `session.merchant.payout_destination_id`.
+             * @example seller-1
+             */
+            payout_destination_id?: string;
+        };
         TransactionSettlementsEvent: {
             /** @description Id of the settlement this was paid in */
             settlement_id: string;
@@ -5367,7 +5696,7 @@ export interface components {
                 code?: string;
                 /** @description The human readable description of the error/warning */
                 message: string;
-                type?: ("ERROR" | "DECLINED" | "ISSUER_ERROR" | "PICK_UP_CARD" | "INVALID_MERCHANT" | "INVALID_TRANSACTION" | "INVALID_AMOUNT" | "INSUFFICIENT_FUNDS" | "CLOSED_ACCOUNT" | "EXPIRED_CARD" | "EXCEEDS_APPROVAL_LIMIT" | "EXCEEDS_WITHDRAWAL_FREQUENCY_LIMIT" | "RESTRICTED_CARD" | "PIN_REQUIRED" | "FAILED_VERIFICATION" | "ADDITIONAL_VERIFICATION_REQUIRED" | "UNKNOWN")[];
+                type?: ("ERROR" | "DECLINED" | "ISSUER_ERROR" | "PICK_UP_CARD" | "INVALID_MERCHANT" | "INVALID_TRANSACTION" | "INVALID_AMOUNT" | "INSUFFICIENT_FUNDS" | "CLOSED_ACCOUNT" | "EXPIRED_CARD" | "EXCEEDS_APPROVAL_LIMIT" | "EXCEEDS_WITHDRAWAL_FREQUENCY_LIMIT" | "RESTRICTED_CARD" | "PIN_REQUIRED" | "FAILED_VERIFICATION" | "ADDITIONAL_VERIFICATION_REQUIRED" | "AUTHORIZATION_EXPIRED" | "PENDING_ISSUER_RESPONSE" | "UNKNOWN")[];
                 /** @description Result code received from Visa or Mastercard */
                 result_code?: string;
                 /** @description Information about retry policy for the error */
@@ -5544,41 +5873,7 @@ export interface components {
                 "bambora:wallet"?: string;
             };
         };
-        /** @description Verified identity of the customer aka payer */
-        VerifiedIdentity: {
-            /** @enum {string} */
-            type: "collector-idp" | "dintero-idp";
-            /**
-             * Format: uri
-             * @example https://idp-uat.collectorbank.se
-             */
-            iss: string;
-            sub?: string;
-            aud: string;
-            /**
-             * Format: uri
-             * @description Authentication Context Class Reference.
-             * @example urn:collectorbank:ac:method:nbid
-             */
-            acr: string;
-            /** Format: date-time */
-            auth_time: string;
-            national_idp: string;
-            /**
-             * Format: iso3166-alpha2
-             * @example NO
-             */
-            national_country: string;
-            nonce?: string;
-            /** @example John Doe */
-            name?: string;
-            /** @example John */
-            given_name?: string;
-            /** @example Doe */
-            family_name?: string;
-        };
         TransactionCollector: {
-            verified_identity?: components["schemas"]["VerifiedIdentity"];
             events?: {
                 metadata?: {
                     /** @description External status reported after adding invoice and activating invoice */
@@ -5832,10 +6127,12 @@ export interface components {
             };
         };
         TransactionKravia: {
-            verified_identity?: components["schemas"]["VerifiedIdentity"];
             metadata?: {
-                /** @description The invoice number of the invoice. */
+                /** @description The invoice number. */
                 "kravia:invoice_number"?: string;
+                /** @description The invoice reference. */
+                "kravia:invoice_reference"?: string;
+                "kravia:invoice_channel"?: components["schemas"]["InvoiceChannel"];
                 /**
                  * Format: uri
                  * @description URL to download the invoice PDF.
@@ -5858,12 +6155,16 @@ export interface components {
                     "kravia:invoice_number"?: string;
                     /** @description The ID of the creditor. */
                     "kravia:creditor_id"?: string;
-                    /** @description The ID of the debtor. */
-                    "kravia:debtor_id"?: string;
                     /** @description ID of the invoice in Kravia system. */
                     "kravia:invoice_id"?: string;
-                    /** @description The case number of the invoice. */
-                    "kravia:case_number"?: string;
+                    /** @description The payment recipient's bank account. */
+                    "kravia:payment_details:bank_account:bban"?: string;
+                    /** @description The IBAN of the payment recipient's bank account. */
+                    "kravia:payment_details:bank_account:iban"?: string;
+                    /** @description The SWIFT code of the payment recipient's bank account. */
+                    "kravia:payment_details:bank_account:swift"?: string;
+                    /** @description The KID for the payment. */
+                    "kravia:payment_details:kid"?: string;
                 };
             }[];
         };
@@ -5873,6 +6174,24 @@ export interface components {
                 metadata?: {
                     /** @description Id that will be referenced on the settlement report, unique for this event */
                     payout_correlation_id?: string;
+                    /**
+                     * @description The ID of the terminal that was used in the event.
+                     * @example T0292
+                     */
+                    terminal_id?: string;
+                    /**
+                     * Format: date-time
+                     * @description The timeout for `INITIATE_REFUND` events, the transaction
+                     *     will then be updated with failed `REFUND` event, and new
+                     *     refund request can be started
+                     */
+                    refund_timeout_at?: string;
+                    /** @description Serial number of the terminal id */
+                    device_serial_number?: string;
+                    /** @description Refund request ID */
+                    "seitatech:refund_request:id"?: string;
+                    /** @description Status of the refund request */
+                    "seitatech:refund_request:status"?: string;
                     /** @description Unique transaction ID from the terminal. */
                     "seitatech:uniqueId"?: string;
                     /**
@@ -5890,15 +6209,17 @@ export interface components {
                     "seitatech:archiveId"?: string;
                     "seitatech:authorizer"?: string;
                     "seitatech:batchId"?: string;
-                    /** @description Customer receipt text from the terminal. */
+                    /** @description Customer receipt text from the terminal. Only returned with `includes=events.receipts`. */
                     "seitatech:customerReceipt"?: string;
+                    /** @description Continuation of `seitatech:customerReceipt`, if the text is longer than one part. Only returned with `includes=events.receipts`. */
                     "seitatech:customerReceiptPart2"?: string;
                     /** @description ISO 8583 field 41 - terminal ID. */
                     "seitatech:field41"?: string;
                     /** @description ISO 8583 field 42 - merchant ID. */
                     "seitatech:field42"?: string;
-                    /** @description Merchant receipt text from the terminal. */
+                    /** @description Merchant receipt text from the terminal. Only returned with `includes=events.receipts`. */
                     "seitatech:merchantReceipt"?: string;
+                    /** @description Continuation of `seitatech:merchantReceipt`, if the text is longer than one part. Only returned with `includes=events.receipts`. */
                     "seitatech:merchantReceiptPart2"?: string;
                     "seitatech:reasonCode"?: string;
                     "seitatech:responseCode"?: string;
@@ -5938,6 +6259,8 @@ export interface components {
                  * @description The url for payment verification.
                  */
                 "two:payment_url"?: string;
+                /** @description A unique id for the merchant */
+                "two:merchant_id"?: string;
             };
             events?: {
                 metadata?: {
@@ -5964,17 +6287,61 @@ export interface components {
                 };
             }[];
         };
+        TransactionWalley: {
+            metadata?: {
+                /** @description Order Id in Walley */
+                "gateway:id"?: string;
+                /**
+                 * @description The reference of the Walley order, shown as `orderNumber` in the
+                 *     Walley settlement reports.
+                 * @example 1111256226383O1Y69NJ
+                 */
+                payout_correlation_id?: string;
+                /**
+                 * @description The payment product the end user chose in Walley Checkout, as
+                 *     returned by Walley in `purchase.paymentName`.
+                 *
+                 *     Known values are `DirectInvoice`, `Invoice`, `Account`,
+                 *     `PartPayment`, `Campaign`, `Card`, `Trustly`, `Swish`,
+                 *     `MobilePay`, `Vipps` and `PayPal`. Walley can add new values
+                 *     without notice, so handle unknown values.
+                 * @example PartPayment
+                 */
+                "walley:payment_name"?: string;
+                /**
+                 * @description The customer type of the Walley purchase
+                 * @enum {string}
+                 */
+                "walley:customer_type"?: "PrivateCustomer" | "BusinessCustomer";
+            };
+            events?: {
+                metadata?: {
+                    /** @description Order Id in Walley */
+                    "walley:order_id"?: string;
+                    /** @description Id of the Walley checkout */
+                    "walley:private_id"?: string;
+                    /**
+                     * @description The `actionReference` sent to Walley for the capture,
+                     *     refund or void, shown on the operation in the Walley
+                     *     settlement reports. Set on `CAPTURE`, `REFUND` and `VOID`
+                     *     events.
+                     * @example 1111256226383O1Y69NJ3
+                     */
+                    payout_correlation_id?: string;
+                };
+            }[];
+        };
         Transaction: components["schemas"]["Id"] & {
             /**
              * @description The payment product corresponding to this transaction
              * @enum {string}
              */
-            payment_product: "bambora" | "collector" | "dintero" | "dintero_psp" | "instabank" | "klarna" | "netaxept" | "payex" | "santander" | "swish" | "vipps" | "kravia" | "two" | "seitatech";
+            payment_product: "bambora" | "collector" | "dintero" | "dintero_psp" | "instabank" | "klarna" | "netaxept" | "payex" | "santander" | "swish" | "vipps" | "kravia" | "two" | "seitatech" | "walley";
             /**
              * @description The payment product type corresponding to this transaction
              * @enum {string}
              */
-            payment_product_type: "bambora.applepay" | "bambora.creditcard" | "bambora.googlepay" | "bambora.mobilepay" | "bambora.vipps" | "collector.invoice" | "collector.invoice_b2b" | "collector.invoice_b2b_preapproved" | "collector.installment" | "dintero.zero" | "dintero.wallets" | "dintero.external" | "dintero_psp.creditcard" | "dintero_psp.vipps" | "dintero_psp.googlepay" | "dintero_psp.applepay" | "dintero_psp.clicktopay" | "instabank.finance" | "instabank.invoice" | "instabank.installment" | "instabank.postponement" | "klarna.klarna" | "klarna.billie" | "kravia.invoice_b2b" | "kravia.invoice_b2b_grouped" | "kravia.invoice_b2c" | "two.invoice_b2b" | "netaxept.creditcard" | "payex.creditcard" | "payex.mobilepay" | "payex.swish" | "payex.vipps" | "payex.applepay" | "payex.clicktopay" | "payex.googlepay" | "santander.debit_account" | "seitatech.in_person" | "swish.swish" | "vipps";
+            payment_product_type: "bambora.applepay" | "bambora.creditcard" | "bambora.googlepay" | "bambora.mobilepay" | "bambora.vipps" | "collector.invoice" | "collector.invoice_b2b" | "collector.invoice_b2b_preapproved" | "collector.installment" | "dintero.zero" | "dintero.wallets" | "dintero.external" | "dintero_psp.creditcard" | "dintero_psp.vipps" | "dintero_psp.googlepay" | "dintero_psp.applepay" | "dintero_psp.clicktopay" | "instabank.finance" | "instabank.invoice" | "instabank.installment" | "instabank.postponement" | "klarna.klarna" | "klarna.billie" | "kravia.invoice_b2b" | "kravia.invoice_b2b_grouped" | "kravia.invoice_b2c" | "two.invoice_b2b" | "netaxept.creditcard" | "payex.creditcard" | "payex.mobilepay" | "payex.swish" | "payex.vipps" | "payex.applepay" | "payex.clicktopay" | "payex.googlepay" | "santander.debit_account" | "seitatech.in_person" | "swish.swish" | "vipps" | "walley.checkout_b2b" | "walley.checkout_b2c";
             /**
              * @description Non-negative, minor units. Total amount of the transaction
              * @example 72200
@@ -5999,11 +6366,7 @@ export interface components {
              * @enum {string}
              */
             channel: "ecommerce" | "in_app" | "in_store";
-            /**
-             * @description Type of platform the merchant is.
-             * @enum {string}
-             */
-            platform_type?: "aggregator" | "marketplace";
+            platform_type?: components["schemas"]["PlatformType"];
             /** @description A reference specified by the merchant to identify the transaction, can be updated after the transaction has been created */
             merchant_reference_2?: string;
             /**
@@ -6045,6 +6408,7 @@ export interface components {
             shipping_option?: components["schemas"]["MultiShipmentTopLevelShippingOption"];
             billing_address?: components["schemas"]["OrderAddress"];
             store?: components["schemas"]["Store"];
+            merchant?: components["schemas"]["TransactionMerchant"];
             /**
              * @description The current status of the transaction
              * @example CAPTURED
@@ -6228,7 +6592,8 @@ export interface components {
                 payout_correlation_id?: string;
             };
             checkboxes?: components["schemas"]["CheckboxConfiguration"];
-        } & components["schemas"]["TransactionBambora"] & components["schemas"]["TransactionCollector"] & components["schemas"]["TransactionInstabank"] & components["schemas"]["TransactionDinteroPsp"] & components["schemas"]["TransactionKlarna"] & components["schemas"]["TransactionNetaxept"] & components["schemas"]["TransactionPayEx"] & components["schemas"]["TransactionSantander"] & components["schemas"]["TransactionSwish"] & components["schemas"]["TransactionVipps"] & components["schemas"]["TransactionKravia"] & components["schemas"]["TransactionSeitatech"] & components["schemas"]["TransactionTwo"];
+            verified_identity?: components["schemas"]["VerifiedIdentity"];
+        } & components["schemas"]["TransactionBambora"] & components["schemas"]["TransactionCollector"] & components["schemas"]["TransactionInstabank"] & components["schemas"]["TransactionDinteroPsp"] & components["schemas"]["TransactionKlarna"] & components["schemas"]["TransactionNetaxept"] & components["schemas"]["TransactionPayEx"] & components["schemas"]["TransactionSantander"] & components["schemas"]["TransactionSwish"] & components["schemas"]["TransactionVipps"] & components["schemas"]["TransactionKravia"] & components["schemas"]["TransactionSeitatech"] & components["schemas"]["TransactionTwo"] & components["schemas"]["TransactionWalley"];
         SettlementItem: {
             /** @description Unique identifier for the settlement */
             id?: string;
@@ -6613,7 +6978,50 @@ export interface components {
              * @example NO
              */
             address_country?: string;
+            citizenships?: {
+                /**
+                 * Format: iso-3166-1
+                 * @description ISO 3166-1 country code
+                 * @example NO
+                 */
+                country: string;
+                social_security_number: string;
+            }[];
         };
+        /**
+         * @description Which country the bank account is registered in.
+         *     Must be a two letter ISO 3166-1-alpha-2 country code.
+         *
+         *     Supported bank account country codes:
+         *       * `AT` (Austria)
+         *       * `BE` (Belgium)
+         *       * `HR` (Croatia)
+         *       * `CY` (Cyprus)
+         *       * `DK` (Denmark)
+         *       * `EE` (Estonia)
+         *       * `FI` (Finland)
+         *       * `FR` (France)
+         *       * `DE` (Germany)
+         *       * `GR` (Greece)
+         *       * `IE` (Ireland)
+         *       * `IS` (Iceland)
+         *       * `IT` (Italy)
+         *       * `LV` (Latvia)
+         *       * `LT` (Lithuania)
+         *       * `LU` (Luxembourg)
+         *       * `MT` (Malta)
+         *       * `NL` (Netherlands)
+         *       * `NO` (Norway)
+         *       * `PT` (Portugal)
+         *       * `SK` (Slovakia)
+         *       * `SI` (Slovenia)
+         *       * `ES` (Spain)
+         *       * `SE` (Sweden)
+         *       * `UK` (United Kingdoms)
+         *       * `US` (United States of America)
+         * @example NO
+         */
+        BankAccountCountryCode: string;
         ApprovalsBankAccount: {
             /** @description Name of the Bank used */
             bank_name?: string;
@@ -6625,12 +7033,7 @@ export interface components {
              * @enum {string}
              */
             bank_account_number_type?: "IBAN" | "BBAN";
-            /**
-             * Format: iso-3166-1
-             * @description Country code, must be a two letter ISO 3166-1-alpha-2 country code. If not
-             *     set we default to the country_code of parent approval object.
-             */
-            bank_account_country_code?: string;
+            bank_account_country_code?: components["schemas"]["BankAccountCountryCode"];
             /**
              * Format: iso4217-code
              * @description The three-character ISO-4217 currency.
@@ -6651,6 +7054,20 @@ export interface components {
              * @example DNBANOKKXXX
              */
             bank_identification_code?: string;
+        };
+        /** @description A link to an agreement the seller has to accept. */
+        CustomAgreement: {
+            /**
+             * @description The name of the agreement, shown to the seller in the declaration form.
+             * @example Terms of Service for Acme Marketplace
+             */
+            name: string;
+            /**
+             * Format: url
+             * @description URL to a page or document with the agreement.
+             * @example https://www.example.com/legal/seller-terms
+             */
+            url: string;
         };
         ApprovalsPayoutDestination: components["schemas"]["Entity"] & {
             /**
@@ -6694,13 +7111,16 @@ export interface components {
              */
             bank_accounts: components["schemas"]["ApprovalsBankAccount"][];
             /**
-             * @description The interval of the payout. The interval can be `daily`, `weekly` or `monthly`.
+             * @description The interval of the payout. The interval can be `daily`, `weekly`, `monthly` or `manual`.
              * @enum {string}
              */
-            payout_interval_type?: "daily" | "weekly" | "monthly";
+            payout_interval_type?: "daily" | "weekly" | "monthly" | "manual";
             /**
              * @description The user that will submit the form. If the email is set the user will be notified
              *     about the form via email.
+             *
+             *     See [Seller onboarding - Reminder emails](https://docs.dintero.com/docs/checkout/split-payment/add-payout-destinations#reminder-emails)
+             *     for the reminder schedule.
              */
             form_submitter?: {
                 /**
@@ -6713,6 +7133,18 @@ export interface components {
                 /** @description The title of the user that will submit the form. */
                 title?: string;
             };
+            /**
+             * @description Links to agreements the seller has to accept, replacing Dintero's
+             *     standard terms for sellers. Requires an access token with the
+             *     `admin:dintero` scope, a request from a token without that scope is
+             *     rejected with `400`.
+             *
+             *     An empty array creates a case without any terms, where the seller is
+             *     not asked to accept anything.
+             *
+             *     A case created with `custom_agreements` is always reviewed manually, it is never approved automatically.
+             */
+            custom_agreements?: components["schemas"]["CustomAgreement"][];
             settlement_report_configuration?: {
                 /** @description Emails that will receive settlement reports by email for this payout destination */
                 emails: string[];
@@ -6739,20 +7171,21 @@ export interface components {
         };
         /** @enum {string} */
         ApprovalStatus: "ACTIVE" | "DECLINED" | "UNDER_MANUAL_REVIEW" | "AUTOMATIC_REVIEW" | "WAITING_FOR_SIGNATURE" | "WAITING_FOR_DECLARATION" | "ERROR" | "ARCHIVED" | "WAITING_FOR_DETAILS" | "TERMINATED";
+        ApprovalLinks: {
+            /**
+             * Format: uri
+             * @description The URL of the link.
+             */
+            href?: string;
+            /**
+             * @description Specifies the type of link
+             * @enum {string}
+             */
+            rel?: "contract_url" | "cdd_case_url" | "dintero_cdd_case_url" | "declaration_url" | "signed_contract_file_url";
+        }[];
         ApprovalsPayoutDestinationResponse: components["schemas"]["ApprovalsPayoutDestination"] & {
             case_status?: components["schemas"]["ApprovalStatus"];
-            links?: {
-                /**
-                 * Format: uri
-                 * @description The URL of the link.
-                 */
-                href?: string;
-                /**
-                 * @description Specifies the type of link
-                 * @enum {string}
-                 */
-                rel?: "contract_url" | "cdd_case_url" | "dintero_cdd_case_url" | "declaration_url" | "signed_contract_file_url";
-            }[];
+            links?: components["schemas"]["ApprovalLinks"];
         };
         PaySessionBase: {
             url?: {
@@ -7164,6 +7597,16 @@ export interface components {
             phone_number: string;
             /** @description The email address of a person or an organisation */
             email: string;
+        };
+        /**
+         * @example {
+         *       "type": "payout-destination",
+         *       "account_id": "P12345678",
+         *       "payout_destination_id": "seller"
+         *     }
+         */
+        FundTransferParticipant: {
+            type: string;
         };
         /**
          * @description List of country codes (ISO 3166-1 alpha-2) for which the merchant can add exemptions for.
@@ -7810,7 +8253,7 @@ export interface operations {
                      */
                     capture_reference?: string;
                     /**
-                     * @description Info about the captured order items
+                     * @description Info about the captured order items. A maximum of 100 items are allowed. If providing items with `splits` - a maximum total of 200 `splits` are allowed in total across all items.
                      *
                      *     #### Instabank
                      *     `required` if the transaction `payment_product` is *instabank*.
@@ -7887,6 +8330,7 @@ export interface operations {
                      * @description Optional list of transaction items to update.
                      *     If the transaction already has items, this field is required.
                      *     When present, sum of item amounts must equal the updated transaction amount.
+                     *     A maximum of 100 items are allowed. If providing items with `splits` - a maximum total of 200 `splits` are allowed in total across all items.
                      */
                     items?: (components["schemas"]["OrderItem"] & components["schemas"]["OrderDiscountItem"])[];
                     /** @description Description of the order. Used when updating Klarna order amounts. */
@@ -7971,7 +8415,20 @@ export interface operations {
                      */
                     refund_reference?: string;
                     /**
-                     * @description Info about the refunded order items
+                     * @description Required for `seitatech.in_person` refunds. The cardholder
+                     *     must be present at the terminal to approve the refund.
+                     *
+                     *     > The terminal must be active on the same
+                     *     > `payout_destination_id` as the original transaction.
+                     *     > A valid `terminal_id` always returns `202 Accepted`.
+                     *     > If the terminal is offline, the `INITIATE_REFUND` event
+                     *     > expires after 120 seconds and the transaction is updated
+                     *     > with a failed refund event.
+                     * @example T0292
+                     */
+                    terminal_id?: string;
+                    /**
+                     * @description Info about the refunded order items. A maximum of 100 items are allowed. If providing items with `splits` - a maximum total of 200 `splits` are allowed in total across all items.
                      *
                      *     #### Instabank
                      *     `required` if the transaction `payment_product` is *instabank*.
@@ -8095,8 +8552,9 @@ export interface operations {
                  *     - **`events.request_headers`** Include the event headers stored for each event.
                  *     - **`events.success.true`** Include events where success is true.
                  *     - **`initiating_system_request_headers`** Include the request headers from the initiating system.
+                 *     - **`events.receipts`** Include the receipt text from the terminal in event metadata (`seitatech:customerReceipt`, `seitatech:merchantReceipt` and their `Part2`).
                  */
-                includes?: ("card.payment_token" | "card.recurrence_token" | "session" | "session.events.latest" | "events.request_headers" | "events.success.true" | "initiating_system_request_headers")[];
+                includes?: ("card.payment_token" | "card.recurrence_token" | "session" | "session.events.latest" | "events.request_headers" | "events.success.true" | "initiating_system_request_headers" | "events.receipts")[];
             };
             header?: never;
             path: {
@@ -8223,9 +8681,12 @@ export interface operations {
                 search?: string;
                 /**
                  * @description Filter on `payment_operation`
-                 * @example unscheduled_purchase
+                 * @example [
+                 *       "unscheduled_purchase",
+                 *       "recurring_purchase"
+                 *     ]
                  */
-                payment_operation?: string;
+                payment_operation?: ("unscheduled_purchase" | "recurring_purchase" | "invoice_payment" | "generate_payment_token")[];
                 /** @description Filter transactions on the `customer.customer_id`. */
                 customer_id?: string;
                 /**
@@ -8238,6 +8699,14 @@ export interface operations {
                 payout_destination_id?: string;
                 /** @description Filter transactions on token_id(s) associated with the transactions, using `card.payment_token_id`. ?token_id=A&token_id=B&token_id=X. */
                 token_id?: string[];
+                /** @description Transaction authorization expiry greater than or equal to filter. Compares the value to `metadata.authorization_expiration` in the most recent `AUTHORIZE` event, only present for payments via the dintero_psp and klarna gateway. (ISO 8601. We recommend using a localised ISO 8601 datetime like `2017-07-21T17:32:28Z`. If a timezone is not specified we assume UTC) */
+                "authorization_expires_at.gte"?: string;
+                /** @description Transaction authorization expiry less than or equal to filter. Compares the value to `metadata.authorization_expiration` in the most recent `AUTHORIZE` event, only present for payments via the dintero_psp and klarna gateway. (ISO 8601. We recommend using a localised ISO 8601 datetime like `2017-07-21T17:32:28Z`. If a timezone is not specified we assume UTC) */
+                "authorization_expires_at.lte"?: string;
+                /** @description Filter by terminal ID. */
+                terminal_id?: string;
+                /** @description Filter by channel. */
+                channel?: ("ecommerce" | "in_app" | "in_store")[];
             };
             header?: never;
             path?: never;
@@ -8736,7 +9205,13 @@ export interface operations {
     checkout_session_pay_post: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                /**
+                 * @description Identifies the client that sends the request. Without it, the payment
+                 *     can fail: Dintero cancels the session and creates no transaction.
+                 * @example my-shop-billing/1.0
+                 */
+                "User-Agent": string;
                 /**
                  * @description - **`strict-merchant-reference`**: The `session.order.merchant_reference`
                  *       must be unique. The pay request will fail with `400 BadRequest` error
@@ -8830,7 +9305,17 @@ export interface operations {
     example_discount_codes_callback_url: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /**
+                 * @description Dintero signature that can be used to verify the request from
+                 *     Dintero.
+                 *
+                 *     Only include if a signature secret exist:
+                 *
+                 *     - [POST /v1/admin/signature](#operation/admin_signature_post)
+                 */
+                "Dintero-Signature"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -9015,7 +9500,17 @@ export interface operations {
     example_shipping_address_callback_url: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /**
+                 * @description Dintero signature that can be used to verify the request from
+                 *     Dintero.
+                 *
+                 *     Only include if a signature secret exist:
+                 *
+                 *     - [POST /v1/admin/signature](#operation/admin_signature_post)
+                 */
+                "Dintero-Signature"?: string;
+            };
             path?: never;
             cookie?: never;
         };
