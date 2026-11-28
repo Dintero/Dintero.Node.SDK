@@ -1,6 +1,9 @@
 # Dintero Node.js SDK
 
-[![Build Status](https://github.com/dintero/Dintero.Node.SDK/workflows/CI/badge.svg)](https://github.com/dintero/Dintero.Node.SDK/actions?query=workflow%3ACI+branch%3Amaster)
+[![Build Status][ci-badge]][ci]
+
+[ci-badge]: https://github.com/dintero/Dintero.Node.SDK/workflows/CI/badge.svg
+[ci]: https://github.com/dintero/Dintero.Node.SDK/actions?query=workflow%3ACI+branch%3Amaster
 
 The Dintero Node SDK provides convenient access to the Dintero API from
 applications written in server-side Javascript
@@ -12,12 +15,14 @@ Install the package with:
 ```sh
 npm install @dintero/node-sdk
 # or
-yarn add @dintero/node-sdk
+pnpm add @dintero/node-sdk
 ```
 
 ## Usage
 
-To use the Dintero Node.js SDK, you will need to configure it with your **API credentials** that can be created in the Dintero Backoffice. These credentials include the **Client ID**, **Client Secret**, and **Audience**, which are required for authenticating your requests to the Dintero API.
+To use the Dintero Node.js SDK, you will need to configure it with your **API credentials** that can be
+created in the Dintero Backoffice. These credentials include the **Client ID**, **Client Secret**, and
+**Audience**, which are required for authenticating your requests to the Dintero API.
 
 ### Example: Client Setup
 
@@ -111,7 +116,23 @@ Contact us at [security@dintero.com](mailto:security@dintero.com)
 
 ## Building from source
 
+Requires Node.js with [corepack](https://github.com/nodejs/corepack) (`npm install --global corepack`
+on Node.js 25+). The Makefile enables corepack and installs the pinned pnpm version from `package.json`.
+
 ```bash
-yarn install
-yarn run build
+make build test
 ```
+
+Run `make help` to list all targets.
+
+## Release
+
+Releases are explicit: bump `version` in `package.json` on your branch and include it in the PR:
+
+```bash
+make bump-version              # patch, or BUMP=minor / BUMP=major
+```
+
+When merged to master, the release workflow (`make release`) publishes the package to npm
+and creates the GitHub release/tag `v<version>` with generated release notes.
+If the tag already exists, nothing is released.

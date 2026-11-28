@@ -1,3 +1,4 @@
+import type { Client } from "openapi-fetch";
 import createOpenApiFetchClient from "openapi-fetch";
 import {
     createAuthMiddleware,
@@ -7,7 +8,13 @@ import {
 } from "./middleware";
 import type { CheckoutPaths, ClientOptions, CorePaths } from "./types";
 
-export const createClient = (options: ClientOptions) => {
+export type DinteroClient = {
+    checkout: Client<CheckoutPaths>;
+    core: Client<CorePaths>;
+    accountId: string;
+};
+
+export const createClient = (options: ClientOptions): DinteroClient => {
     const config: Required<ClientOptions> = {
         checkout: { baseUrl: "https://checkout.dintero.com" },
         core: { baseUrl: "https://api.dintero.com" },

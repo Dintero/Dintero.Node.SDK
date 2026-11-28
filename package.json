@@ -1,6 +1,6 @@
 {
     "name": "@dintero/node-sdk",
-    "version": "0.0.0-development",
+    "version": "1.4.17",
     "description": "Node.js library for the Dintero API",
     "main": "./dist/dintero.js",
     "typings": "./dist/dintero.d.ts",
@@ -22,31 +22,25 @@
         "url": "https://github.com/Dintero/Dintero.Node.SDK/issues"
     },
     "scripts": {
-        "build": "yarn -s build-ts && yarn -s lint",
+        "build": "tsc --noEmit && pnpm run build-ts && pnpm run lint",
         "build-ts": "tsc -p ./tsconfig.build.json",
-        "test": "node --require ts-node/register --experimental-test-module-mocks --test test/*.test.ts",
+        "test": "node --import tsx --test test/*.test.ts",
         "lint": "biome check",
-        "convert-spec": "ts-node -T scripts/convert-spec.ts",
-        "semantic-release": "semantic-release",
-        "prepublishOnly": "yarn run build-ts"
+        "convert-spec": "tsx scripts/convert-spec.ts",
+        "prepublishOnly": "pnpm run build-ts"
     },
     "devDependencies": {
         "@biomejs/biome": "2.6.8",
-        "@types/js-yaml": "4.0.9",
-        "@types/node": "25.9.9",
-        "@types/swagger2openapi": "7.0.4",
-        "js-yaml": "5.5.0",
+        "@types/node": "26.6.6",
         "msw": "3.0.6",
-        "openapi-typescript": "7.13.0",
-        "semantic-release": "25.0.9",
-        "swagger2openapi": "7.0.8",
-        "ts-node": "10.9.2",
-        "typescript": "5.9.3"
+        "tsx": "4.23.15",
+        "typescript": "7.0.2"
     },
     "engines": {
         "node": ">=20.0.0"
     },
     "dependencies": {
         "openapi-fetch": "^0.17.0"
-    }
+    },
+    "packageManager": "pnpm@12.24.0+sha512.5f90f50a48aa40f01dc43bd3acb528922fd899d3b909015fdb23af73bb31c578f29ceb29be9a4d6f0146adb34206aac332796043cc5024b815ef76288cbac767"
 }
